@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Api {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  category    String
+  authType    String   @default("none")
+  baseUrl     String
+  docsUrl     String
+  tags        String[] @default([])
+  endpoints   Json     @default("[]")
+  createdAt   DateTime @default(now())
+
+  @@index([category])
+  @@index([name])
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String?  @unique
+  name      String?
+  githubId  String?  @unique
+  plan      String   @default("free")
+  createdAt DateTime @default(now())
+
+  requestHistory RequestHistory[]
+}
+
+model RequestHistory {
+  id         String   @id @default(cuid())
+  userId     String
+  apiName    String
+  method     String
+  url        String
+  status     Int
+  durationMs Int
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}

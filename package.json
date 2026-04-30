@@ -1,0 +1,13 @@
+{
+  "name": "api-explorer",
+  "private": true,
+  "workspaces": [
+    "packages/shared",
+    "packages/backend",
+    "packages/extension"
+  ],
+  "scripts": {
+    "dev:backend": "npm run dev --workspace=packages/backend",
+    "dev:extension": "npm run watch --workspace=packages/extension"
+  }
+}
