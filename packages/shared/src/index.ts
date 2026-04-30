@@ -1,3 +1,4 @@
+export * from "./db";
 export interface ApiEntry {
   id: string;
   name: string;
