@@ -1,0 +1,74 @@
+import * as vscode from "vscode";
+
+const BACKEND_URL = "http://localhost:3000";
+
+export class SidebarProvider implements vscode.WebviewViewProvider {
+  constructor(private readonly _extensionUri: vscode.Uri) {}
+
+  public resolveWebviewView(webviewView: vscode.WebviewView) {
+    webviewView.webview.options = {
+      enableScripts: true,
+      localResourceRoots: [this._extensionUri],
+    };
+
+    webviewView.webview.html = this._getHtml(webviewView.webview);
+
+    webviewView.webview.onDidReceiveMessage(async (msg) => {
+      if (msg.type === "search") {
+        try {
+          const res = await fetch(
+            `${BACKEND_URL}/api/search?q=${encodeURIComponent(msg.query)}`,
+          );
+          const data = await res.json();
+          webviewView.webview.postMessage({
+            type: "searchResults",
+            results: data,
+          });
+        } catch {
+          webviewView.webview.postMessage({
+            type: "error",
+            message: "Cannot reach backend. Is it running on localhost:3000?",
+          });
+        }
+      }
+
+      if (msg.type === "openRequestBuilder") {
+        vscode.commands.executeCommand(
+          "api-explorer.openRequestBuilder",
+          msg.api,
+        );
+      }
+    });
+  }
+
+  private _getHtml(webview: vscode.Webview): string {
+    const scriptUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "dist", "webview.js"),
+    );
+
+    const nonce = Math.random().toString(36).slice(2);
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'nonce-${nonce}'; style-src 'unsafe-inline';">
+  <title>API Explorer</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--vscode-sideBar-background);
+      color: var(--vscode-foreground);
+      font-family: var(--vscode-font-family);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script nonce="${nonce}" src="${scriptUri}"></script>
+</body>
+</html>`;
+  }
+}

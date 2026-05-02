@@ -1,0 +1,70 @@
+{
+  "name": "api-explorer",
+  "displayName": "API Explorer",
+  "description": "Search and test public APIs without leaving VS Code",
+  "version": "0.0.1",
+  "publisher": "your-publisher-name",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "API",
+    "REST",
+    "HTTP",
+    "client",
+    "explorer",
+    "testing"
+  ],
+  "activationEvents": [],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "api-explorer",
+          "title": "API Explorer",
+          "icon": "$(plug)"
+        }
+      ]
+    },
+    "views": {
+      "api-explorer": [
+        {
+          "type": "webview",
+          "id": "api-explorer.sidebar",
+          "name": "Search APIs",
+          "icon": "resources/icon.svg"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "api-explorer.openRequestBuilder",
+        "title": "API Explorer: Open Request Builder"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --platform=node --format=cjs",
+    "build:webview": "esbuild src/webview.tsx --bundle --outfile=dist/webview.js --platform=browser --define:process.env.NODE_ENV=\\\"production\\\"",
+    "watch": "npm run build -- --watch",
+    "watch:webview": "npm run build:webview -- --watch",
+    "package": "vsce package",
+    "publish": "vsce publish"
+  },
+  "dependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "@types/vscode": "^1.85.0",
+    "esbuild": "^0.20.0",
+    "typescript": "^5.0.0"
+  }
+}
