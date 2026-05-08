@@ -12,10 +12,43 @@ if (!connectionString || connectionString === "undefined") {
 
 const pool = new Pool({ connectionString });
 const adapter = new PrismaPg(pool);
-
 const prisma = new PrismaClient({ adapter });
 
-const SEED_APIS = [
+interface ExternalApiEntry {
+  name: string;
+  url: string;
+  description: string;
+  auth: string;
+  https: boolean;
+  cors: string;
+  category: string;
+}
+
+function mapAuthType(auth: string): string {
+  switch (auth.trim().toLowerCase()) {
+    case "no":
+      return "none";
+    case "apikey":
+      return "apiKey";
+    case "oauth":
+      return "oauth2";
+    case "bearer":
+      return "bearer";
+    case "user-agent":
+      return "none";
+    default:
+      return "apiKey";
+  }
+}
+
+function toSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+const HARDCODED_APIS = [
   {
     id: "openweathermap",
     name: "OpenWeatherMap",
@@ -32,20 +65,8 @@ const SEED_APIS = [
         method: "GET",
         summary: "Current weather by city",
         params: [
-          {
-            name: "q",
-            in: "query",
-            required: true,
-            description: "City name",
-            example: "London",
-          },
-          {
-            name: "appid",
-            in: "query",
-            required: true,
-            description: "Your API key",
-            example: "your_key",
-          },
+          { name: "q", in: "query", required: true, description: "City name", example: "London" },
+          { name: "appid", in: "query", required: true, description: "Your API key", example: "your_key" },
         ],
       },
       {
@@ -53,13 +74,7 @@ const SEED_APIS = [
         method: "GET",
         summary: "5-day forecast",
         params: [
-          {
-            name: "q",
-            in: "query",
-            required: true,
-            description: "City name",
-            example: "Tokyo",
-          },
+          { name: "q", in: "query", required: true, description: "City name", example: "Tokyo" },
         ],
       },
     ],
@@ -67,27 +82,21 @@ const SEED_APIS = [
   {
     id: "dog-api",
     name: "The Dog API",
-    description:
-      "Random dog images, breeds, and sub-breeds. No auth needed — great for testing.",
+    description: "Random dog images, breeds, and sub-breeds. No auth needed — great for testing.",
     category: "Animals",
     authType: "none",
     baseUrl: "https://dog.ceo/api",
     docsUrl: "https://dog.ceo/dog-api",
     tags: ["dogs", "images", "fun"],
     endpoints: [
-      {
-        path: "/breeds/image/random",
-        method: "GET",
-        summary: "Random dog image",
-      },
+      { path: "/breeds/image/random", method: "GET", summary: "Random dog image" },
       { path: "/breeds/list/all", method: "GET", summary: "List all breeds" },
     ],
   },
   {
     id: "coingecko",
     name: "CoinGecko",
-    description:
-      "Cryptocurrency prices, market caps, and trading volume. No auth needed.",
+    description: "Cryptocurrency prices, market caps, and trading volume. No auth needed.",
     category: "Finance",
     authType: "none",
     baseUrl: "https://api.coingecko.com/api/v3",
@@ -99,20 +108,8 @@ const SEED_APIS = [
         method: "GET",
         summary: "Get current crypto prices",
         params: [
-          {
-            name: "ids",
-            in: "query",
-            required: true,
-            description: "Coin IDs",
-            example: "bitcoin,ethereum",
-          },
-          {
-            name: "vs_currencies",
-            in: "query",
-            required: true,
-            description: "Target currency",
-            example: "usd",
-          },
+          { name: "ids", in: "query", required: true, description: "Coin IDs", example: "bitcoin,ethereum" },
+          { name: "vs_currencies", in: "query", required: true, description: "Target currency", example: "usd" },
         ],
       },
       {
@@ -120,13 +117,7 @@ const SEED_APIS = [
         method: "GET",
         summary: "List coins with market data",
         params: [
-          {
-            name: "vs_currency",
-            in: "query",
-            required: true,
-            description: "Target currency",
-            example: "usd",
-          },
+          { name: "vs_currency", in: "query", required: true, description: "Target currency", example: "usd" },
         ],
       },
     ],
@@ -146,20 +137,8 @@ const SEED_APIS = [
         method: "GET",
         summary: "List and search games",
         params: [
-          {
-            name: "key",
-            in: "query",
-            required: true,
-            description: "API key",
-            example: "your_key",
-          },
-          {
-            name: "search",
-            in: "query",
-            required: false,
-            description: "Search term",
-            example: "minecraft",
-          },
+          { name: "key", in: "query", required: true, description: "API key", example: "your_key" },
+          { name: "search", in: "query", required: false, description: "Search term", example: "minecraft" },
         ],
       },
     ],
@@ -179,20 +158,8 @@ const SEED_APIS = [
         method: "GET",
         summary: "Top headlines by country",
         params: [
-          {
-            name: "apiKey",
-            in: "query",
-            required: true,
-            description: "Your API key",
-            example: "your_key",
-          },
-          {
-            name: "country",
-            in: "query",
-            required: false,
-            description: "Country code",
-            example: "us",
-          },
+          { name: "apiKey", in: "query", required: true, description: "Your API key", example: "your_key" },
+          { name: "country", in: "query", required: false, description: "Country code", example: "us" },
         ],
       },
       {
@@ -200,13 +167,7 @@ const SEED_APIS = [
         method: "GET",
         summary: "Search all articles",
         params: [
-          {
-            name: "q",
-            in: "query",
-            required: true,
-            description: "Search term",
-            example: "technology",
-          },
+          { name: "q", in: "query", required: true, description: "Search term", example: "technology" },
         ],
       },
     ],
@@ -214,8 +175,7 @@ const SEED_APIS = [
   {
     id: "rest-countries",
     name: "REST Countries",
-    description:
-      "Info about countries — population, languages, currencies, borders.",
+    description: "Info about countries — population, languages, currencies, borders.",
     category: "Geography",
     authType: "none",
     baseUrl: "https://restcountries.com/v3.1",
@@ -228,13 +188,7 @@ const SEED_APIS = [
         method: "GET",
         summary: "Search by country name",
         params: [
-          {
-            name: "name",
-            in: "path",
-            required: true,
-            description: "Country name",
-            example: "canada",
-          },
+          { name: "name", in: "path", required: true, description: "Country name", example: "canada" },
         ],
       },
     ],
@@ -242,8 +196,7 @@ const SEED_APIS = [
   {
     id: "pokeapi",
     name: "PokeAPI",
-    description:
-      "All Pokémon data — moves, abilities, types, stats. No auth needed.",
+    description: "All Pokémon data — moves, abilities, types, stats. No auth needed.",
     category: "Gaming",
     authType: "none",
     baseUrl: "https://pokeapi.co/api/v2",
@@ -255,13 +208,7 @@ const SEED_APIS = [
         method: "GET",
         summary: "Get Pokémon by name",
         params: [
-          {
-            name: "name",
-            in: "path",
-            required: true,
-            description: "Pokémon name",
-            example: "pikachu",
-          },
+          { name: "name", in: "path", required: true, description: "Pokémon name", example: "pikachu" },
         ],
       },
     ],
@@ -269,8 +216,7 @@ const SEED_APIS = [
   {
     id: "nasa",
     name: "NASA APIs",
-    description:
-      "Space data — Astronomy Picture of the Day, Mars rover photos, near-earth objects.",
+    description: "Space data — Astronomy Picture of the Day, Mars rover photos, near-earth objects.",
     category: "Science",
     authType: "apiKey",
     baseUrl: "https://api.nasa.gov",
@@ -282,13 +228,7 @@ const SEED_APIS = [
         method: "GET",
         summary: "Astronomy Picture of the Day",
         params: [
-          {
-            name: "api_key",
-            in: "query",
-            required: true,
-            description: "Use DEMO_KEY for testing",
-            example: "DEMO_KEY",
-          },
+          { name: "api_key", in: "query", required: true, description: "Use DEMO_KEY for testing", example: "DEMO_KEY" },
         ],
       },
     ],
@@ -308,13 +248,7 @@ const SEED_APIS = [
         method: "GET",
         summary: "Get user profile",
         params: [
-          {
-            name: "username",
-            in: "path",
-            required: true,
-            description: "GitHub username",
-            example: "torvalds",
-          },
+          { name: "username", in: "path", required: true, description: "GitHub username", example: "torvalds" },
         ],
       },
       {
@@ -322,13 +256,7 @@ const SEED_APIS = [
         method: "GET",
         summary: "Search repositories",
         params: [
-          {
-            name: "q",
-            in: "query",
-            required: true,
-            description: "Search query",
-            example: "next.js",
-          },
+          { name: "q", in: "query", required: true, description: "Search query", example: "next.js" },
         ],
       },
     ],
@@ -336,8 +264,7 @@ const SEED_APIS = [
   {
     id: "jsonplaceholder",
     name: "JSONPlaceholder",
-    description:
-      "Fake REST API for testing — posts, comments, users, todos. No auth needed.",
+    description: "Fake REST API for testing — posts, comments, users, todos. No auth needed.",
     category: "Tools",
     authType: "none",
     baseUrl: "https://jsonplaceholder.typicode.com",
@@ -351,13 +278,7 @@ const SEED_APIS = [
         method: "GET",
         summary: "Get user by ID",
         params: [
-          {
-            name: "id",
-            in: "path",
-            required: true,
-            description: "User ID",
-            example: "1",
-          },
+          { name: "id", in: "path", required: true, description: "User ID", example: "1" },
         ],
       },
     ],
@@ -377,13 +298,7 @@ const SEED_APIS = [
         method: "GET",
         summary: "Search books",
         params: [
-          {
-            name: "q",
-            in: "query",
-            required: true,
-            description: "Search query",
-            example: "the lord of the rings",
-          },
+          { name: "q", in: "query", required: true, description: "Search query", example: "the lord of the rings" },
         ],
       },
     ],
@@ -403,13 +318,7 @@ const SEED_APIS = [
         method: "GET",
         summary: "Get location for IP",
         params: [
-          {
-            name: "ip",
-            in: "path",
-            required: true,
-            description: "IP address",
-            example: "8.8.8.8",
-          },
+          { name: "ip", in: "path", required: true, description: "IP address", example: "8.8.8.8" },
         ],
       },
     ],
@@ -430,13 +339,7 @@ const SEED_APIS = [
         method: "GET",
         summary: "Search quotes",
         params: [
-          {
-            name: "query",
-            in: "query",
-            required: true,
-            description: "Search term",
-            example: "success",
-          },
+          { name: "query", in: "query", required: true, description: "Search term", example: "success" },
         ],
       },
     ],
@@ -456,20 +359,8 @@ const SEED_APIS = [
         method: "GET",
         summary: "Latest exchange rates",
         params: [
-          {
-            name: "apikey",
-            in: "path",
-            required: true,
-            description: "Your API key",
-            example: "your_key",
-          },
-          {
-            name: "base",
-            in: "path",
-            required: true,
-            description: "Base currency",
-            example: "USD",
-          },
+          { name: "apikey", in: "path", required: true, description: "Your API key", example: "your_key" },
+          { name: "base", in: "path", required: true, description: "Base currency", example: "USD" },
         ],
       },
     ],
@@ -477,8 +368,7 @@ const SEED_APIS = [
   {
     id: "spotify",
     name: "Spotify Web API",
-    description:
-      "Music data — tracks, artists, albums, playlists, and audio features.",
+    description: "Music data — tracks, artists, albums, playlists, and audio features.",
     category: "Music",
     authType: "oauth2",
     baseUrl: "https://api.spotify.com/v1",
@@ -490,20 +380,8 @@ const SEED_APIS = [
         method: "GET",
         summary: "Search tracks, artists, albums",
         params: [
-          {
-            name: "q",
-            in: "query",
-            required: true,
-            description: "Search query",
-            example: "radiohead",
-          },
-          {
-            name: "type",
-            in: "query",
-            required: true,
-            description: "Result type",
-            example: "artist",
-          },
+          { name: "q", in: "query", required: true, description: "Search query", example: "radiohead" },
+          { name: "type", in: "query", required: true, description: "Result type", example: "artist" },
         ],
       },
     ],
@@ -511,9 +389,11 @@ const SEED_APIS = [
 ];
 
 async function main() {
-  console.log("🚀 Starting seed with Driver Adapter...");
+  console.log("🚀 Starting seed...\n");
 
-  for (const api of SEED_APIS) {
+  // Seed hardcoded APIs with full endpoint data
+  console.log("📌 Seeding curated APIs with endpoint data...");
+  for (const api of HARDCODED_APIS) {
     await prisma.api.upsert({
       where: { id: api.id },
       update: {
@@ -524,19 +404,76 @@ async function main() {
         baseUrl: api.baseUrl,
         docsUrl: api.docsUrl,
         tags: api.tags,
-        endpoints: api.endpoints as any, // Cast to any if using Json in schema
+        endpoints: api.endpoints as any,
       },
       create: api as any,
     });
     console.log(`  ✓ ${api.name}`);
   }
+
+  // Fetch and seed all APIs from public-api-lists
+  console.log("\n📥 Fetching public API list...");
+  const response = await fetch(
+    "https://public-api-lists.github.io/public-api-lists/api/all.json"
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to fetch API list: ${response.status} ${response.statusText}`);
+  }
+  const data = (await response.json()) as { count: number; entries: ExternalApiEntry[] };
+  console.log(`  Found ${data.entries.length} APIs`);
+
+  const hardcodedIds = new Set(HARDCODED_APIS.map((a) => a.id));
+
+  let added = 0;
+  let skipped = 0;
+  for (const entry of data.entries) {
+    if (!entry.url || !entry.name) {
+      skipped++;
+      continue;
+    }
+
+    const id = toSlug(entry.name);
+
+    // Keep the hardcoded version when we have richer endpoint data for it
+    if (hardcodedIds.has(id)) {
+      skipped++;
+      continue;
+    }
+
+    await prisma.api.upsert({
+      where: { id },
+      update: {
+        name: entry.name,
+        description: entry.description,
+        category: entry.category,
+        authType: mapAuthType(entry.auth),
+        baseUrl: entry.url,
+        docsUrl: entry.url,
+        tags: [entry.category.toLowerCase()],
+      },
+      create: {
+        id,
+        name: entry.name,
+        description: entry.description,
+        category: entry.category,
+        authType: mapAuthType(entry.auth),
+        baseUrl: entry.url,
+        docsUrl: entry.url,
+        tags: [entry.category.toLowerCase()],
+        endpoints: [],
+      },
+    });
+    added++;
+  }
+
+  console.log(`  ✓ ${added} APIs imported, ${skipped} skipped (duplicates or missing data)`);
 }
 
 main()
   .then(async () => {
-    console.log("\n✅ Seeding successful.");
+    console.log("\n✅ Seeding complete.");
     await prisma.$disconnect();
-    await pool.end(); // Important: Close the pool so the script exits
+    await pool.end();
   })
   .catch(async (e) => {
     console.error("❌ Seeding failed:", e);

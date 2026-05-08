@@ -1,13 +1,17 @@
 {
   "name": "api-explorer",
   "private": true,
-  "workspaces": [
-    "packages/shared",
-    "packages/backend",
-    "packages/extension"
-  ],
+  "packageManager": "pnpm@10.33.0",
   "scripts": {
-    "dev:backend": "npm run dev --workspace=packages/backend",
-    "dev:extension": "npm run watch --workspace=packages/extension"
+    "dev:backend": "pnpm --filter backend run dev",
+    "dev:extension": "pnpm --filter api-explorer run watch"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/engines",
+      "esbuild",
+      "prisma",
+      "sharp"
+    ]
   }
 }

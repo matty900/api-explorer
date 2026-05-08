@@ -7,21 +7,6 @@ declare function acquireVsCodeApi(): {
 
 const vscode = acquireVsCodeApi();
 
-const CATEGORIES = [
-  "All",
-  "Weather",
-  "Finance",
-  "Gaming",
-  "News",
-  "Tools",
-  "Science",
-  "Developer",
-  "Music",
-  "Books",
-  "Fun",
-  "Animals",
-  "Geography",
-];
 
 const AUTH_COLOR: Record<string, string> = {
   none: "#1d9e75",
@@ -52,6 +37,7 @@ interface Api {
 function App() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All");
+  const [categories, setCategories] = useState<string[]>(["All"]);
   const [results, setResults] = useState<Api[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -61,6 +47,9 @@ function App() {
   useEffect(() => {
     const handler = (event: MessageEvent) => {
       const msg = event.data;
+      if (msg.type === "categoriesResult") {
+        setCategories(["All", ...(msg.categories as string[])]);
+      }
       if (msg.type === "searchResults") {
         setResults(msg.results.apis || []);
         setLoading(false);
@@ -73,6 +62,7 @@ function App() {
       }
     };
     window.addEventListener("message", handler);
+    vscode.postMessage({ type: "getCategories" });
     return () => window.removeEventListener("message", handler);
   }, []);
 
@@ -91,7 +81,9 @@ function App() {
 
   const handleCategory = (cat: string) => {
     setCategory(cat);
-    search(query, cat);
+    setQuery("");
+    clearTimeout(debounce.current);
+    search("", cat);
   };
 
   return (
@@ -119,7 +111,7 @@ function App() {
       <div
         style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 12 }}
       >
-        {CATEGORIES.map((cat) => (
+        {categories.map((cat) => (
           <button
             key={cat}
             onClick={() => handleCategory(cat)}

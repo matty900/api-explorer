@@ -14,11 +14,28 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     webviewView.webview.html = this._getHtml(webviewView.webview);
 
     webviewView.webview.onDidReceiveMessage(async (msg) => {
+      if (msg.type === "getCategories") {
+        try {
+          const res = await fetch(`${BACKEND_URL}/api/categories`);
+          const data = await res.json();
+          webviewView.webview.postMessage({
+            type: "categoriesResult",
+            categories: data.categories || [],
+          });
+        } catch {
+          webviewView.webview.postMessage({
+            type: "categoriesResult",
+            categories: [],
+          });
+        }
+      }
+
       if (msg.type === "search") {
         try {
-          const res = await fetch(
-            `${BACKEND_URL}/api/search?q=${encodeURIComponent(msg.query)}`,
-          );
+          const url = new URL(`${BACKEND_URL}/api/search`);
+          url.searchParams.set("q", msg.query ?? "");
+          url.searchParams.set("category", msg.category ?? "");
+          const res = await fetch(url.toString());
           const data = await res.json();
           webviewView.webview.postMessage({
             type: "searchResults",

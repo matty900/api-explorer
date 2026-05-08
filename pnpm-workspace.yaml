@@ -1,0 +1,4 @@
+packages:
+  - packages/shared
+  - packages/backend
+  - packages/extension
