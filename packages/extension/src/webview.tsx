@@ -63,6 +63,8 @@ function App() {
     };
     window.addEventListener("message", handler);
     vscode.postMessage({ type: "getCategories" });
+    vscode.postMessage({ type: "search", query: "", category: "All" });
+    setLoading(true);
     return () => window.removeEventListener("message", handler);
   }, []);
 
@@ -152,18 +154,6 @@ function App() {
       {error && (
         <p style={{ color: "var(--vscode-errorForeground)", fontSize: 12 }}>
           {error}
-        </p>
-      )}
-      {!loading && !searched && (
-        <p
-          style={{
-            color: "var(--vscode-descriptionForeground)",
-            fontSize: 12,
-            lineHeight: 1.6,
-          }}
-        >
-          Search for any public API — weather, games, finance, and more. Click a
-          result to test it.
         </p>
       )}
       {!loading && searched && results.length === 0 && (
