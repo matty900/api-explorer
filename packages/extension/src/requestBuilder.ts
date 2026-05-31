@@ -47,7 +47,17 @@ export class RequestBuilderPanel {
             body: JSON.stringify(msg.request),
           });
           const data = await res.json();
-          this._panel.webview.postMessage({ type: "response", response: data });
+          if (data.error) {
+            this._panel.webview.postMessage({
+              type: "error",
+              message: data.error,
+            });
+          } else {
+            this._panel.webview.postMessage({
+              type: "response",
+              response: data,
+            });
+          }
         } catch {
           this._panel.webview.postMessage({
             type: "error",

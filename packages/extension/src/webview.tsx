@@ -34,6 +34,22 @@ interface Api {
   endpoints: unknown[];
 }
 
+function FilterIcon({ active }: { active: boolean }) {
+  return (
+    <svg
+      width="14" height="14" viewBox="0 0 16 16" fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      style={{ display: "block" }}
+    >
+      <path
+        d="M1 3h14M3.5 8h9M6 13h4"
+        stroke={active ? "var(--vscode-focusBorder)" : "currentColor"}
+        strokeWidth="1.5" strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 function App() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All");
@@ -42,7 +58,10 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [searched, setSearched] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [selectedAuthTypes, setSelectedAuthTypes] = useState<Set<string>>(new Set());
   const debounce = useRef<ReturnType<typeof setTimeout>>();
+  const filterRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handler = (event: MessageEvent) => {
@@ -68,6 +87,16 @@ function App() {
     return () => window.removeEventListener("message", handler);
   }, []);
 
+  useEffect(() => {
+    const onClickOutside = (e: MouseEvent) => {
+      if (filterRef.current && !filterRef.current.contains(e.target as Node)) {
+        setFilterOpen(false);
+      }
+    };
+    if (filterOpen) document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, [filterOpen]);
+
   const search = (q: string, cat: string) => {
     setLoading(true);
     setError("");
@@ -88,26 +117,162 @@ function App() {
     search("", cat);
   };
 
+  const toggleAuthType = (authType: string) => {
+    setSelectedAuthTypes((prev) => {
+      const next = new Set(prev);
+      next.has(authType) ? next.delete(authType) : next.add(authType);
+      return next;
+    });
+  };
+
+  const availableAuthTypes = [...new Set(results.map((a) => a.authType))].sort();
+  const filteredResults = selectedAuthTypes.size === 0
+    ? results
+    : results.filter((a) => selectedAuthTypes.has(a.authType));
+  const isFiltered = selectedAuthTypes.size > 0;
+
   return (
     <div style={{ padding: 12 }}>
-      {/* Search input */}
-      <input
-        type="text"
-        value={query}
-        onChange={handleInput}
-        placeholder="Search APIs... e.g. weather, games"
-        style={{
-          width: "100%",
-          padding: "7px 10px",
-          background: "var(--vscode-input-background)",
-          color: "var(--vscode-input-foreground)",
-          border: "1px solid var(--vscode-input-border)",
-          borderRadius: 4,
-          fontSize: 13,
-          fontFamily: "inherit",
-          marginBottom: 10,
-        }}
-      />
+      {/* Search row with filter button */}
+      <div style={{ display: "flex", gap: 6, marginBottom: 10, alignItems: "center" }}>
+        <input
+          type="text"
+          value={query}
+          onChange={handleInput}
+          placeholder="Search APIs... e.g. weather, games"
+          style={{
+            flex: 1,
+            padding: "7px 10px",
+            background: "var(--vscode-input-background)",
+            color: "var(--vscode-input-foreground)",
+            border: "1px solid var(--vscode-input-border)",
+            borderRadius: 4,
+            fontSize: 13,
+            fontFamily: "inherit",
+          }}
+        />
+
+        {/* Filter button + dropdown */}
+        <div ref={filterRef} style={{ position: "relative", flexShrink: 0 }}>
+          <button
+            onClick={() => setFilterOpen((o) => !o)}
+            title="Filter by auth type"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 30,
+              height: 30,
+              padding: 0,
+              borderRadius: 4,
+              cursor: "pointer",
+              border: `1px solid ${isFiltered ? "var(--vscode-focusBorder)" : "var(--vscode-input-border)"}`,
+              background: isFiltered ? "var(--vscode-focusBorder)22" : "var(--vscode-input-background)",
+              color: isFiltered ? "var(--vscode-focusBorder)" : "var(--vscode-foreground)",
+              position: "relative",
+            }}
+          >
+            <FilterIcon active={isFiltered} />
+            {isFiltered && (
+              <span style={{
+                position: "absolute",
+                top: 2,
+                right: 2,
+                width: 6,
+                height: 6,
+                borderRadius: "50%",
+                background: "var(--vscode-focusBorder)",
+              }} />
+            )}
+          </button>
+
+          {filterOpen && (
+            <div style={{
+              position: "absolute",
+              top: "calc(100% + 4px)",
+              right: 0,
+              minWidth: 160,
+              background: "var(--vscode-input-background)",
+              border: "1px solid var(--vscode-widget-border)",
+              borderRadius: 6,
+              boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+              zIndex: 100,
+              padding: "6px 0",
+            }}>
+              <div style={{
+                padding: "4px 12px 6px",
+                fontSize: 10,
+                fontWeight: 600,
+                letterSpacing: ".06em",
+                textTransform: "uppercase",
+                color: "var(--vscode-descriptionForeground)",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}>
+                Auth Type
+                {isFiltered && (
+                  <button
+                    onClick={() => setSelectedAuthTypes(new Set())}
+                    style={{
+                      fontSize: 10,
+                      padding: "1px 5px",
+                      borderRadius: 3,
+                      border: "none",
+                      background: "transparent",
+                      color: "var(--vscode-focusBorder)",
+                      cursor: "pointer",
+                      fontFamily: "inherit",
+                    }}
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              {availableAuthTypes.map((authType) => {
+                const checked = selectedAuthTypes.has(authType);
+                const color = AUTH_COLOR[authType] ?? "#888";
+                const label = AUTH_LABEL[authType] ?? authType;
+                return (
+                  <label
+                    key={authType}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      padding: "5px 12px",
+                      cursor: "pointer",
+                      fontSize: 12,
+                      background: checked ? "var(--vscode-list-hoverBackground)" : "transparent",
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => toggleAuthType(authType)}
+                      style={{ accentColor: color, margin: 0 }}
+                    />
+                    <span style={{
+                      display: "inline-block",
+                      width: 8,
+                      height: 8,
+                      borderRadius: "50%",
+                      background: color,
+                      flexShrink: 0,
+                    }} />
+                    {label}
+                  </label>
+                );
+              })}
+              {availableAuthTypes.length === 0 && (
+                <div style={{ padding: "5px 12px", fontSize: 12, color: "var(--vscode-descriptionForeground)" }}>
+                  No results to filter
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Category pills */}
       <div
@@ -145,9 +310,7 @@ function App() {
 
       {/* States */}
       {loading && (
-        <p
-          style={{ color: "var(--vscode-descriptionForeground)", fontSize: 12 }}
-        >
+        <p style={{ color: "var(--vscode-descriptionForeground)", fontSize: 12 }}>
           Searching...
         </p>
       )}
@@ -156,16 +319,14 @@ function App() {
           {error}
         </p>
       )}
-      {!loading && searched && results.length === 0 && (
-        <p
-          style={{ color: "var(--vscode-descriptionForeground)", fontSize: 12 }}
-        >
-          No APIs found. Try a different term.
+      {!loading && searched && filteredResults.length === 0 && (
+        <p style={{ color: "var(--vscode-descriptionForeground)", fontSize: 12 }}>
+          {results.length > 0 ? "No APIs match the selected filters." : "No APIs found. Try a different term."}
         </p>
       )}
 
       {/* Results */}
-      {results.map((api) => (
+      {filteredResults.map((api) => (
         <div
           key={api.id}
           onClick={() =>
