@@ -4,7 +4,7 @@ A VS Code extension for discovering and testing public REST APIs without leaving
 
 Search a curated catalog of 250+ APIs, browse by category or auth type, and fire live HTTP requests — all from the VS Code sidebar.
 
----
+-----
 
 ## Features
 
