@@ -14,7 +14,7 @@ Search a curated catalog of 250+ APIs, browse by category or auth type, and fire
 - **Copy as fetch()** to paste working code straight into your project
 - Catalog seeded from hand-picked APIs + [APIs.guru](https://apis.guru)
 
----
+------
 
 ## Prerequisites
 
