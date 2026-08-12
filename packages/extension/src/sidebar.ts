@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-
+// sidebar.ts runs in the Node.js extension host
 const BACKEND_URL = "http://localhost:3000";
 
 export class SidebarProvider implements vscode.WebviewViewProvider {
@@ -12,8 +12,9 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     };
 
     webviewView.webview.html = this._getHtml(webviewView.webview);
-
+    // The message listener handles messages sent from the webview (e.g., to fetch categories, perform search, or open the request builder)
     webviewView.webview.onDidReceiveMessage(async (msg) => {
+      // 1. Fetch categories
       if (msg.type === "getCategories") {
         try {
           const res = await fetch(`${BACKEND_URL}/api/categories`);
@@ -29,7 +30,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
           });
         }
       }
-
+      // 2. Perform search
       if (msg.type === "search") {
         try {
           const url = new URL(`${BACKEND_URL}/api/search`);
@@ -48,7 +49,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
           });
         }
       }
-
+      // 3. Open request builder
       if (msg.type === "openRequestBuilder") {
         vscode.commands.executeCommand(
           "api-explorer.openRequestBuilder",
@@ -57,7 +58,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
       }
     });
   }
-
+  // The _getHtml method returns the HTML content for the sidebar webview, including styles and scripts for displaying categories, search results, and handling user interactions
   private _getHtml(webview: vscode.Webview): string {
     const scriptUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, "dist", "webview.js"),
@@ -66,26 +67,26 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     const nonce = Math.random().toString(36).slice(2);
 
     return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'nonce-${nonce}'; style-src 'unsafe-inline';">
-  <title>API Explorer</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      background: var(--vscode-sideBar-background);
-      color: var(--vscode-foreground);
-      font-family: var(--vscode-font-family);
-      font-size: 13px;
-    }
-  </style>
-</head>
-<body>
-  <div id="root"></div>
-  <script nonce="${nonce}" src="${scriptUri}"></script>
-</body>
-</html>`;
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'nonce-${nonce}'; style-src 'unsafe-inline';">
+    <title>API Explorer</title>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        background: var(--vscode-sideBar-background);
+        color: var(--vscode-foreground);
+        font-family: var(--vscode-font-family);
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script nonce="${nonce}" src="${scriptUri}"></script>
+  </body>
+  </html>`;
   }
 }

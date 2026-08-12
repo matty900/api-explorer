@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 
 const BACKEND_URL = "http://localhost:3000";
 
+// generate a random nonce for Content Security Policy
 function getNonce() {
   let text = "";
   const possible =
@@ -12,6 +13,7 @@ function getNonce() {
   return text;
 }
 
+// This class manages the request builder panel that opens when clicking on an API in the sidebar
 export class RequestBuilderPanel {
   public static currentPanel: RequestBuilderPanel | undefined;
   private readonly _panel: vscode.WebviewPanel;
@@ -31,7 +33,7 @@ export class RequestBuilderPanel {
     );
     RequestBuilderPanel.currentPanel = new RequestBuilderPanel(panel, api);
   }
-
+  // The constructor sets up the webview panel and its message listener
   private constructor(panel: vscode.WebviewPanel, api: unknown) {
     this._panel = panel;
     this._update(api);
@@ -71,7 +73,7 @@ export class RequestBuilderPanel {
       }
     });
   }
-
+  // The _update method updates the webview content based on the selected API
   private _update(api: unknown) {
     const a = api as {
       name: string;
@@ -85,6 +87,8 @@ export class RequestBuilderPanel {
     this._panel.webview.html = this._getHtml(a);
   }
 
+  /* This method constructs a massive string containing the HTML, CSS, 
+  and JavaScript that renders the entire testing dashboard. */
   private _getHtml(api: any): string {
     const nonce = getNonce();
     const safe = (s: string) =>
@@ -92,7 +96,7 @@ export class RequestBuilderPanel {
         .replace(/'/g, "&#39;")
         .replace(/"/g, "&quot;")
         .replace(/`/g, "&#96;");
-
+    // generates small clickable badge buttons for quick testing
     const firstEndpoint = api.endpoints?.[0];
     const defaultUrl = firstEndpoint
       ? safe(api.baseUrl + firstEndpoint.path)
@@ -112,7 +116,7 @@ export class RequestBuilderPanel {
           "</button>",
       )
       .join("");
-
+    // returns the full HTML content for the webview panel for testing the API, including styles and scripts for sending requests and displaying responses
     return (
       "<!DOCTYPE html>" +
       '<html lang="en"><head>' +
