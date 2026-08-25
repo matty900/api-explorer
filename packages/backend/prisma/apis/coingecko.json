@@ -1,0 +1,51 @@
+{
+  "id": "coingecko",
+  "name": "CoinGecko",
+  "description": "Cryptocurrency prices, market caps, and trading volume. No auth needed.",
+  "category": "Finance",
+  "authType": "none",
+  "baseUrl": "https://api.coingecko.com/api/v3",
+  "docsUrl": "https://www.coingecko.com/api/documentation",
+  "tags": [
+    "crypto",
+    "bitcoin",
+    "prices"
+  ],
+  "endpoints": [
+    {
+      "path": "/simple/price",
+      "method": "GET",
+      "summary": "Get current crypto prices",
+      "params": [
+        {
+          "name": "ids",
+          "in": "query",
+          "required": true,
+          "description": "Coin IDs",
+          "example": "bitcoin,ethereum"
+        },
+        {
+          "name": "vs_currencies",
+          "in": "query",
+          "required": true,
+          "description": "Target currency",
+          "example": "usd"
+        }
+      ]
+    },
+    {
+      "path": "/coins/markets",
+      "method": "GET",
+      "summary": "List coins with market data",
+      "params": [
+        {
+          "name": "vs_currency",
+          "in": "query",
+          "required": true,
+          "description": "Target currency",
+          "example": "usd"
+        }
+      ]
+    }
+  ]
+}

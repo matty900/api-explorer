@@ -1,0 +1,35 @@
+{
+  "id": "quotable",
+  "name": "Quotable",
+  "description": "Random inspirational quotes filterable by author or tag.",
+  "category": "Fun",
+  "authType": "none",
+  "baseUrl": "https://api.quotable.io",
+  "docsUrl": "https://github.com/lukePeavey/quotable",
+  "tags": [
+    "quotes",
+    "inspiration",
+    "text"
+  ],
+  "endpoints": [
+    {
+      "path": "/random",
+      "method": "GET",
+      "summary": "Get a random quote"
+    },
+    {
+      "path": "/search/quotes",
+      "method": "GET",
+      "summary": "Search quotes",
+      "params": [
+        {
+          "name": "query",
+          "in": "query",
+          "required": true,
+          "description": "Search term",
+          "example": "success"
+        }
+      ]
+    }
+  ]
+}

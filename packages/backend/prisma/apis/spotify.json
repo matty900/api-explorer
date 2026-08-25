@@ -1,0 +1,37 @@
+{
+  "id": "spotify",
+  "name": "Spotify Web API",
+  "description": "Music data — tracks, artists, albums, playlists, and audio features.",
+  "category": "Music",
+  "authType": "oauth2",
+  "baseUrl": "https://api.spotify.com/v1",
+  "docsUrl": "https://developer.spotify.com/documentation/web-api",
+  "tags": [
+    "music",
+    "streaming",
+    "playlists"
+  ],
+  "endpoints": [
+    {
+      "path": "/search",
+      "method": "GET",
+      "summary": "Search tracks, artists, albums",
+      "params": [
+        {
+          "name": "q",
+          "in": "query",
+          "required": true,
+          "description": "Search query",
+          "example": "radiohead"
+        },
+        {
+          "name": "type",
+          "in": "query",
+          "required": true,
+          "description": "Result type",
+          "example": "artist"
+        }
+      ]
+    }
+  ]
+}

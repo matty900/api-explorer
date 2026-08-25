@@ -1,3 +1,4 @@
+// This file contains the implementation of the request builder panel for testing APIs in the VS Code extension.
 import * as vscode from "vscode";
 
 const BACKEND_URL = "http://localhost:3000";

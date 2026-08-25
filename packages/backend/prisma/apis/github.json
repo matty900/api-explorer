@@ -1,0 +1,44 @@
+{
+  "id": "github",
+  "name": "GitHub REST API",
+  "description": "Access GitHub repos, users, issues, and pull requests.",
+  "category": "Developer",
+  "authType": "bearer",
+  "baseUrl": "https://api.github.com",
+  "docsUrl": "https://docs.github.com/rest",
+  "tags": [
+    "git",
+    "code",
+    "repos"
+  ],
+  "endpoints": [
+    {
+      "path": "/users/{username}",
+      "method": "GET",
+      "summary": "Get user profile",
+      "params": [
+        {
+          "name": "username",
+          "in": "path",
+          "required": true,
+          "description": "GitHub username",
+          "example": "torvalds"
+        }
+      ]
+    },
+    {
+      "path": "/search/repositories",
+      "method": "GET",
+      "summary": "Search repositories",
+      "params": [
+        {
+          "name": "q",
+          "in": "query",
+          "required": true,
+          "description": "Search query",
+          "example": "next.js"
+        }
+      ]
+    }
+  ]
+}

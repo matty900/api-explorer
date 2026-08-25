@@ -1,0 +1,30 @@
+{
+  "id": "nasa",
+  "name": "NASA APIs",
+  "description": "Space data — Astronomy Picture of the Day, Mars rover photos, near-earth objects.",
+  "category": "Science",
+  "authType": "apiKey",
+  "baseUrl": "https://api.nasa.gov",
+  "docsUrl": "https://api.nasa.gov",
+  "tags": [
+    "space",
+    "nasa",
+    "astronomy"
+  ],
+  "endpoints": [
+    {
+      "path": "/planetary/apod",
+      "method": "GET",
+      "summary": "Astronomy Picture of the Day",
+      "params": [
+        {
+          "name": "api_key",
+          "in": "query",
+          "required": true,
+          "description": "Use DEMO_KEY for testing",
+          "example": "DEMO_KEY"
+        }
+      ]
+    }
+  ]
+}

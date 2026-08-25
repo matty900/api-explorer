@@ -1,0 +1,30 @@
+{
+  "id": "pokeapi",
+  "name": "PokeAPI",
+  "description": "All Pokémon data — moves, abilities, types, stats. No auth needed.",
+  "category": "Gaming",
+  "authType": "none",
+  "baseUrl": "https://pokeapi.co/api/v2",
+  "docsUrl": "https://pokeapi.co/docs/v2",
+  "tags": [
+    "pokemon",
+    "gaming",
+    "anime"
+  ],
+  "endpoints": [
+    {
+      "path": "/pokemon/{name}",
+      "method": "GET",
+      "summary": "Get Pokémon by name",
+      "params": [
+        {
+          "name": "name",
+          "in": "path",
+          "required": true,
+          "description": "Pokémon name",
+          "example": "pikachu"
+        }
+      ]
+    }
+  ]
+}

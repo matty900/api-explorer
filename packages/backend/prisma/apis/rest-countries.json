@@ -1,0 +1,35 @@
+{
+  "id": "rest-countries",
+  "name": "REST Countries",
+  "description": "Info about countries — population, languages, currencies, borders.",
+  "category": "Geography",
+  "authType": "none",
+  "baseUrl": "https://restcountries.com/v3.1",
+  "docsUrl": "https://restcountries.com",
+  "tags": [
+    "countries",
+    "geography",
+    "world"
+  ],
+  "endpoints": [
+    {
+      "path": "/all",
+      "method": "GET",
+      "summary": "Get all countries"
+    },
+    {
+      "path": "/name/{name}",
+      "method": "GET",
+      "summary": "Search by country name",
+      "params": [
+        {
+          "name": "name",
+          "in": "path",
+          "required": true,
+          "description": "Country name",
+          "example": "canada"
+        }
+      ]
+    }
+  ]
+}

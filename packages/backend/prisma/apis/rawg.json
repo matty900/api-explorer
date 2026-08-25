@@ -1,0 +1,37 @@
+{
+  "id": "rawg",
+  "name": "RAWG",
+  "description": "The largest video game database with over 500,000 games.",
+  "category": "Gaming",
+  "authType": "apiKey",
+  "baseUrl": "https://api.rawg.io/api",
+  "docsUrl": "https://rawg.io/apidocs",
+  "tags": [
+    "games",
+    "gaming",
+    "metacritic"
+  ],
+  "endpoints": [
+    {
+      "path": "/games",
+      "method": "GET",
+      "summary": "List and search games",
+      "params": [
+        {
+          "name": "key",
+          "in": "query",
+          "required": true,
+          "description": "API key",
+          "example": "your_key"
+        },
+        {
+          "name": "search",
+          "in": "query",
+          "required": false,
+          "description": "Search term",
+          "example": "minecraft"
+        }
+      ]
+    }
+  ]
+}

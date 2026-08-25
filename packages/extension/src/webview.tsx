@@ -1,10 +1,10 @@
+// This file contains the implementation of the webview that appears in the sidebar of the VS Code extension.
+//  It renders a React component that allows users to search for APIs, filter them by category and
+//  authentication type, and view the results. When a user clicks on an API,
+// it sends a message to the extension to open the request builder with the selected API's details.
+// webview.tsx is the view (sandboxed, browser-like, only talks to the outside world through that bridge).
 import React, { useState, useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
-// The webview.tsx file is the entry point for the webview that appears in the sidebar of the
-// VS Code extension. It renders a React component that allows users to search for APIs,
-// filter them by category and authentication type, and view the results.
-// When a user clicks on an API, it sends a message to the extension
-// to open the request builder with the selected API's details.
 declare function acquireVsCodeApi(): {
   postMessage: (msg: unknown) => void;
 };

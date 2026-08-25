@@ -1,3 +1,4 @@
+// This file contains the implementation of the VS Code extension for the API Explorer.
 import * as vscode from "vscode";
 import { SidebarProvider } from "./sidebar";
 import { RequestBuilderPanel } from "./requestBuilder";

@@ -1,0 +1,30 @@
+{
+  "id": "ip-api",
+  "name": "IP Geolocation",
+  "description": "Geolocate any IP address — country, city, timezone, ISP.",
+  "category": "Tools",
+  "authType": "none",
+  "baseUrl": "https://ipapi.co",
+  "docsUrl": "https://ipapi.co/api",
+  "tags": [
+    "ip",
+    "geolocation",
+    "network"
+  ],
+  "endpoints": [
+    {
+      "path": "/{ip}/json",
+      "method": "GET",
+      "summary": "Get location for IP",
+      "params": [
+        {
+          "name": "ip",
+          "in": "path",
+          "required": true,
+          "description": "IP address",
+          "example": "8.8.8.8"
+        }
+      ]
+    }
+  ]
+}

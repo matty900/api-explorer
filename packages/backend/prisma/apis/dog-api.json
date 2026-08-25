@@ -1,0 +1,26 @@
+{
+  "id": "dog-api",
+  "name": "The Dog API",
+  "description": "Random dog images, breeds, and sub-breeds. No auth needed — great for testing.",
+  "category": "Animals",
+  "authType": "none",
+  "baseUrl": "https://dog.ceo/api",
+  "docsUrl": "https://dog.ceo/dog-api",
+  "tags": [
+    "dogs",
+    "images",
+    "fun"
+  ],
+  "endpoints": [
+    {
+      "path": "/breeds/image/random",
+      "method": "GET",
+      "summary": "Random dog image"
+    },
+    {
+      "path": "/breeds/list/all",
+      "method": "GET",
+      "summary": "List all breeds"
+    }
+  ]
+}

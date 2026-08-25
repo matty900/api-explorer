@@ -1,0 +1,40 @@
+{
+  "id": "jsonplaceholder",
+  "name": "JSONPlaceholder",
+  "description": "Fake REST API for testing — posts, comments, users, todos. No auth needed.",
+  "category": "Tools",
+  "authType": "none",
+  "baseUrl": "https://jsonplaceholder.typicode.com",
+  "docsUrl": "https://jsonplaceholder.typicode.com/guide",
+  "tags": [
+    "testing",
+    "mock",
+    "fake"
+  ],
+  "endpoints": [
+    {
+      "path": "/posts",
+      "method": "GET",
+      "summary": "Get all posts"
+    },
+    {
+      "path": "/posts",
+      "method": "POST",
+      "summary": "Create a post"
+    },
+    {
+      "path": "/users/{id}",
+      "method": "GET",
+      "summary": "Get user by ID",
+      "params": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "User ID",
+          "example": "1"
+        }
+      ]
+    }
+  ]
+}

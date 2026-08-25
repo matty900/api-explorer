@@ -1,0 +1,37 @@
+{
+  "id": "exchangerate",
+  "name": "ExchangeRate-API",
+  "description": "Real-time exchange rates for 161 currencies.",
+  "category": "Finance",
+  "authType": "apiKey",
+  "baseUrl": "https://v6.exchangerate-api.com/v6",
+  "docsUrl": "https://www.exchangerate-api.com/docs",
+  "tags": [
+    "currency",
+    "forex",
+    "exchange"
+  ],
+  "endpoints": [
+    {
+      "path": "/{apikey}/latest/{base}",
+      "method": "GET",
+      "summary": "Latest exchange rates",
+      "params": [
+        {
+          "name": "apikey",
+          "in": "path",
+          "required": true,
+          "description": "Your API key",
+          "example": "your_key"
+        },
+        {
+          "name": "base",
+          "in": "path",
+          "required": true,
+          "description": "Base currency",
+          "example": "USD"
+        }
+      ]
+    }
+  ]
+}

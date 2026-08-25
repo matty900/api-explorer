@@ -1,0 +1,51 @@
+{
+  "id": "newsapi",
+  "name": "NewsAPI",
+  "description": "Search worldwide news articles from 150,000+ sources.",
+  "category": "News",
+  "authType": "apiKey",
+  "baseUrl": "https://newsapi.org/v2",
+  "docsUrl": "https://newsapi.org/docs",
+  "tags": [
+    "news",
+    "articles",
+    "media"
+  ],
+  "endpoints": [
+    {
+      "path": "/top-headlines",
+      "method": "GET",
+      "summary": "Top headlines by country",
+      "params": [
+        {
+          "name": "apiKey",
+          "in": "query",
+          "required": true,
+          "description": "Your API key",
+          "example": "your_key"
+        },
+        {
+          "name": "country",
+          "in": "query",
+          "required": false,
+          "description": "Country code",
+          "example": "us"
+        }
+      ]
+    },
+    {
+      "path": "/everything",
+      "method": "GET",
+      "summary": "Search all articles",
+      "params": [
+        {
+          "name": "q",
+          "in": "query",
+          "required": true,
+          "description": "Search term",
+          "example": "technology"
+        }
+      ]
+    }
+  ]
+}

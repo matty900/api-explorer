@@ -1,0 +1,30 @@
+{
+  "id": "open-library",
+  "name": "Open Library",
+  "description": "Books, authors, and editions from the Internet Archive.",
+  "category": "Books",
+  "authType": "none",
+  "baseUrl": "https://openlibrary.org",
+  "docsUrl": "https://openlibrary.org/developers/api",
+  "tags": [
+    "books",
+    "reading",
+    "library"
+  ],
+  "endpoints": [
+    {
+      "path": "/search.json",
+      "method": "GET",
+      "summary": "Search books",
+      "params": [
+        {
+          "name": "q",
+          "in": "query",
+          "required": true,
+          "description": "Search query",
+          "example": "the lord of the rings"
+        }
+      ]
+    }
+  ]
+}

@@ -1,4 +1,9 @@
+// This file contains the implementation of the sidebar provider for the VS Code extension,
+// which displays categories, search results, and allows users to open the request builder for testing APIs.
+
+// sidebar.ts is the controller/bridge (extension host side, has real system/network access
 import * as vscode from "vscode";
+
 // sidebar.ts runs in the Node.js extension host
 const BACKEND_URL = "http://localhost:3000";
 
