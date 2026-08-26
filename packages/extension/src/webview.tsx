@@ -315,6 +315,30 @@ function App() {
             </div>
           )}
         </div>
+
+        <button
+          onClick={() => vscode.postMessage({ type: "submitApi" })}
+          title="Submit an API for the catalog"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 30,
+            height: 30,
+            padding: 0,
+            borderRadius: 4,
+            cursor: "pointer",
+            flexShrink: 0,
+            border: "1px solid var(--vscode-input-border)",
+            background: "var(--vscode-input-background)",
+            color: "var(--vscode-foreground)",
+            fontSize: 16,
+            lineHeight: 1,
+            fontFamily: "inherit",
+          }}
+        >
+          +
+        </button>
       </div>
 
       {/* Category pills */}

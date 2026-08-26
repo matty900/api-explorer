@@ -1,0 +1,34 @@
+name: Validate community API submission
+
+# IMPORTANT: this must stay `pull_request`, never `pull_request_target`.
+# `pull_request` runs with no repo secrets and read-only permissions even for
+# PRs from forks — exactly what we want, since this workflow executes a
+# script that fetches submitted, attacker-controlled `baseUrl`s. Switching to
+# `pull_request_target` would run untrusted PR code with access to secrets.
+on:
+  pull_request:
+    paths:
+      - "packages/backend/prisma/community-apis/**"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Validate submitted API JSON files
+        run: pnpm --filter backend exec tsx scripts/validate-community-apis.ts

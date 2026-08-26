@@ -1,0 +1,35 @@
+name: Import community APIs
+
+# Runs only after a community-apis/** PR has been reviewed and merged to
+# main — never on pull_request. Needs the DATABASE_URL repo secret set under
+# Settings → Secrets and variables → Actions.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/backend/prisma/community-apis/**"
+
+permissions:
+  contents: read
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Import approved community APIs into the catalog
+        run: pnpm --filter backend exec tsx scripts/import-community-apis.ts
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}

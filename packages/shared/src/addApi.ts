@@ -35,7 +35,7 @@ export function toSlug(value: string): string {
 }
 
 /** What a caller submits — `id` is optional and derived from `name` (via slug) when omitted. */
-export type ApiSubmission = Omit<ApiEntry, "id"> & { id?: string };
+export type ApiInput = Omit<ApiEntry, "id"> & { id?: string };
 
 export type AddApiResult =
   | { ok: true; api: ApiEntry; created: boolean }
@@ -121,9 +121,12 @@ function validateEndpoint(
   };
 }
 
+// Validates a community submission or other API input, returning either a
+// normalized ApiInput or a list of validation errors. Does not touch the DB.
+
 export function validateApiSubmission(
   input: unknown,
-): { ok: true; value: ApiSubmission } | { ok: false; errors: string[] } {
+): { ok: true; value: ApiInput } | { ok: false; errors: string[] } {
   const errors: string[] = [];
 
   if (typeof input !== "object" || input === null) {
@@ -204,7 +207,7 @@ export function validateApiSubmission(
 /**
  * Validates and upserts a single API into the catalog, keyed by `id` (or a
  * slug derived from `name`). This is the only path that writes to the `Api`
- * table — hardcoded entries, the apis.guru import, and community submissions
+ * table hardcoded entries, the apis.guru import, and community submissions
  * all funnel through here.
  */
 export async function addApi(input: unknown): Promise<AddApiResult> {

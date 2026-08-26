@@ -61,6 +61,10 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
           msg.api,
         );
       }
+      // 4. Open the "Submit an API" web form in the user's default browser
+      if (msg.type === "submitApi") {
+        vscode.env.openExternal(vscode.Uri.parse(`${BACKEND_URL}/submit`));
+      }
     });
   }
   // The _getHtml method returns the HTML content for the sidebar webview, including styles and scripts for displaying categories, search results, and handling user interactions

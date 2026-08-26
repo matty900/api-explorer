@@ -4,7 +4,7 @@ A VS Code extension for discovering and testing public REST APIs without leaving
 
 Search a curated catalog of 250+ APIs, browse by category or auth type, and fire live HTTP requests — all from the VS Code sidebar.
 
------
+---
 
 ## Features
 
@@ -12,9 +12,9 @@ Search a curated catalog of 250+ APIs, browse by category or auth type, and fire
 - **Filter** by category (Weather, Finance, Gaming, …) and auth type (Free, API Key, OAuth, Bearer)
 - **Test requests** directly in VS Code with the built-in request builder
 - **Copy as fetch()** to paste working code straight into your project
-- Catalog seeded from hand-picked APIs + [APIs.guru](https://apis.guru)
+- Catalog seeded from hand picked APIs + [APIs.guru](https://apis.guru)
 
-------
+---
 
 ## Prerequisites
 
@@ -39,13 +39,16 @@ Create `packages/backend/.env`:
 
 ```env
 DATABASE_URL=postgresql://user:password@localhost:5432/api_explorer
+
+# Optional — required only to use the /admin/submissions review dashboard
+ADMIN_TOKEN=some-long-random-string
 ```
 
-### 3. Run migrations and seed the database
+### 3. Sync the schema and seed the database
 
 ```bash
 cd packages/backend
-npx prisma migrate dev
+npx prisma db push
 pnpm seed
 ```
 
@@ -83,11 +86,15 @@ packages/
 
 ### API routes (backend)
 
-| Route | Description |
-|-------|-------------|
-| `GET /api/search?q=&category=` | Search the API catalog |
-| `GET /api/categories` | List top categories |
-| `POST /api/proxy` | Relay HTTP requests to external APIs (CORS-safe) |
+| Route                               | Description                                      |
+| ----------------------------------- | ------------------------------------------------ |
+| `GET /api/search?q=&category=`      | Search the API catalog                           |
+| `GET /api/categories`               | List top categories                              |
+| `POST /api/proxy`                   | Relay HTTP requests to external APIs (CORS-safe) |
+| `POST /api/submissions`             | Submit an API for review (public, rate-limited)  |
+| `GET /api/submissions?status=`      | List submissions by status (admin)               |
+| `POST /api/submissions/:id/approve` | Approve a submission into the catalog (admin)    |
+| `POST /api/submissions/:id/reject`  | Reject a submission (admin)                      |
 
 ---
 
@@ -97,6 +104,17 @@ packages/
 2. The backend queries Postgres and returns matching APIs.
 3. Clicking an API opens the request builder panel.
 4. Sending a request routes through the backend proxy so external APIs are reachable without CORS restrictions.
+
+---
+
+## Contributing an API
+
+Two ways to add an API to the catalog , see [CONTRIBUTING.md](CONTRIBUTING.md) for details:
+
+- **Web form** (`/submit`, or the **+** button in the extension sidebar) — no account or git needed. Submissions land as "pending" and a maintainer approves or rejects them from `/admin/submissions`.
+- **GitHub pull request** — add a JSON file under `packages/backend/prisma/community-apis/`. CI validates it automatically; once merged, it's imported into the catalog without any manual seeding step.
+
+Nothing reaches the live catalog without a maintainer review, on either path.
 
 ---
 
