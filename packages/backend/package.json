@@ -4,30 +4,31 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate --schema=prisma/schema.prisma && next build",
     "start": "next start",
     "seed": "tsx prisma/seed.ts"
   },
   "prisma": {
+    "schema": "prisma/schema.prisma",
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "@repo/shared": "workspace:*",
+    "dotenv": "^17.4.2",
     "next": "16.2.4",
     "next-auth": "^4.24.14",
+    "pg": "^8.20.0",
     "prisma": "^7.8.0",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },
   "devDependencies": {
-    "@prisma/adapter-pg": "^7.8.0",
     "@types/node": "^20.19.39",
     "@types/pg": "^8.20.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "dotenv": "^17.4.2",
-    "pg": "^8.20.0",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
