@@ -2,7 +2,7 @@
   "id": "ip-api",
   "name": "IP Geolocation",
   "description": "Geolocate any IP address — country, city, timezone, ISP.",
-  "category": "Tools",
+  "category": "Developer",
   "authType": "none",
   "baseUrl": "https://ipapi.co",
   "docsUrl": "https://ipapi.co/api",

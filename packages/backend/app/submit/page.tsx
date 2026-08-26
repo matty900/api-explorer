@@ -1,16 +1,26 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import styles from "./submit.module.css";
 
 const AUTH_TYPES = ["none", "apiKey", "bearer", "oauth2", "basic"] as const;
 const METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE"] as const;
+const OTHER_CATEGORY = "__other__";
 
 type Status = { kind: "idle" } | { kind: "success" } | { kind: "error"; messages: string[] };
 
 export default function SubmitApiPage() {
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const [submitting, setSubmitting] = useState(false);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [showOtherCategory, setShowOtherCategory] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/categories?all=true")
+      .then((r) => r.json())
+      .then((data) => setCategories(data.categories ?? []))
+      .catch(() => setCategories([]));
+  }, []);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -23,10 +33,16 @@ export default function SubmitApiPage() {
       .map((t) => t.trim())
       .filter(Boolean);
 
+    const rawCategory = form.get("category");
+    const category =
+      rawCategory === OTHER_CATEGORY
+        ? String(form.get("customCategory") ?? "").trim()
+        : rawCategory;
+
     const payload = {
       name: form.get("name"),
       description: form.get("description"),
-      category: form.get("category"),
+      category,
       authType: form.get("authType"),
       baseUrl: form.get("baseUrl"),
       docsUrl: form.get("docsUrl"),
@@ -82,6 +98,7 @@ export default function SubmitApiPage() {
     } else {
       setStatus({ kind: "success" });
       e.currentTarget.reset();
+      setShowOtherCategory(false);
     }
     setSubmitting(false);
   }
@@ -122,7 +139,33 @@ export default function SubmitApiPage() {
         <div className={styles.row}>
           <div className={styles.field}>
             <label htmlFor="category">Category</label>
-            <input id="category" name="category" required maxLength={50} placeholder="e.g. Weather" />
+            <select
+              id="category"
+              name="category"
+              required
+              defaultValue=""
+              onChange={(e) => setShowOtherCategory(e.target.value === OTHER_CATEGORY)}
+            >
+              <option value="" disabled>
+                Select a category
+              </option>
+              {categories.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+              <option value={OTHER_CATEGORY}>Other (specify)…</option>
+            </select>
+            {showOtherCategory && (
+              <input
+                type="text"
+                name="customCategory"
+                required
+                maxLength={50}
+                placeholder="New category name"
+                style={{ marginTop: 6 }}
+              />
+            )}
           </div>
           <div className={styles.field}>
             <label htmlFor="authType">Auth type</label>

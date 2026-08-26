@@ -2,7 +2,7 @@
   "id": "jsonplaceholder",
   "name": "JSONPlaceholder",
   "description": "Fake REST API for testing — posts, comments, users, todos. No auth needed.",
-  "category": "Tools",
+  "category": "Developer",
   "authType": "none",
   "baseUrl": "https://jsonplaceholder.typicode.com",
   "docsUrl": "https://jsonplaceholder.typicode.com/guide",
