@@ -42,25 +42,48 @@ export default function SubmitApiPage() {
       website: form.get("website"), // honeypot — real users never see this field
     };
 
+    let res: Response;
     try {
-      const res = await fetch("/api/submissions", {
+      res = await fetch("/api/submissions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      const data = await res.json();
-
-      if (!res.ok) {
-        setStatus({ kind: "error", messages: data.details ?? [data.error ?? "Submission failed"] });
-      } else {
-        setStatus({ kind: "success" });
-        e.currentTarget.reset();
-      }
     } catch {
-      setStatus({ kind: "error", messages: ["Could not reach the server. Please try again."] });
-    } finally {
+      // fetch() itself threw — the request never got a response at all
+      // (offline, DNS failure, or a browser extension blocked it outright).
+      setStatus({
+        kind: "error",
+        messages: ["Could not reach the server. Check your connection and try again."],
+      });
       setSubmitting(false);
+      return;
     }
+
+    let data: any;
+    try {
+      data = await res.json();
+    } catch {
+      // A response came back but its body wasn't readable/valid JSON — the
+      // server likely already processed the request (it runs before
+      // responding), so don't tell the user it "didn't reach the server".
+      setStatus({
+        kind: "error",
+        messages: [
+          "The server responded but we couldn't read the reply — your submission may have already gone through. Please wait a moment and check before resubmitting.",
+        ],
+      });
+      setSubmitting(false);
+      return;
+    }
+
+    if (!res.ok) {
+      setStatus({ kind: "error", messages: data.details ?? [data.error ?? "Submission failed"] });
+    } else {
+      setStatus({ kind: "success" });
+      e.currentTarget.reset();
+    }
+    setSubmitting(false);
   }
 
   return (
