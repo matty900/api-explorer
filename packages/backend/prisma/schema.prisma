@@ -22,6 +22,29 @@ model Api {
   @@index([name])
 }
 
+// Holding area for community submitted APIs (via the public web form). Kept
+// entirely separate from `Api` so nothing unreviewed can ever appear in
+// search results or be proxied — a submission only reaches `Api` by being
+// promoted through addApi() when a maintainer approves it.
+model ApiSubmission {
+  id             String    @id @default(cuid())
+  name           String
+  description    String
+  category       String
+  authType       String
+  baseUrl        String
+  docsUrl        String
+  tags           String[]  @default([])
+  endpoints      Json      @default("[]")
+  status         String    @default("pending") // pending | approved | rejected
+  submitterEmail String?
+  reviewNote     String?
+  createdAt      DateTime  @default(now())
+  reviewedAt     DateTime?
+
+  @@index([status])
+}
+
 model User {
   id        String   @id @default(cuid())
   email     String?  @unique

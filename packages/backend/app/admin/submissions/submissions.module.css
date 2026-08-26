@@ -1,0 +1,133 @@
+.page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 5rem;
+}
+
+.title {
+  font-size: 1.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.tokenForm {
+  display: flex;
+  gap: 0.6rem;
+  margin-bottom: 2rem;
+}
+
+.tokenForm input {
+  flex: 1;
+  font: inherit;
+  padding: 0.55rem 0.7rem;
+  border-radius: 6px;
+  border: 1px solid rgba(128, 128, 128, 0.4);
+  background: transparent;
+  color: inherit;
+}
+
+.tokenForm button,
+.action {
+  font: inherit;
+  padding: 0.55rem 1rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.tokenForm button {
+  background: #171717;
+  color: #fff;
+}
+
+@media (prefers-color-scheme: dark) {
+  .tokenForm button {
+    background: #ededed;
+    color: #0a0a0a;
+  }
+}
+
+.empty {
+  opacity: 0.6;
+  padding: 2rem 0;
+  text-align: center;
+}
+
+.card {
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  border-radius: 8px;
+  padding: 1.1rem 1.3rem;
+  margin-bottom: 1rem;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.cardHeader h2 {
+  font-size: 1.05rem;
+}
+
+.meta {
+  font-size: 0.8rem;
+  opacity: 0.65;
+}
+
+.description {
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
+
+.tagRow {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin: 0.5rem 0;
+}
+
+.tag {
+  font-size: 0.75rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(128, 128, 128, 0.15);
+}
+
+.endpoint {
+  font-family: monospace;
+  font-size: 0.82rem;
+  background: rgba(128, 128, 128, 0.1);
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  margin-bottom: 0.7rem;
+}
+
+.actions {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.approve {
+  background: rgba(34, 197, 94, 0.18);
+  color: inherit;
+}
+
+.reject {
+  background: rgba(239, 68, 68, 0.18);
+  color: inherit;
+}
+
+.action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.error {
+  color: #ef4444;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+}

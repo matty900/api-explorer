@@ -1,3 +1,5 @@
+// this script is not normally involved in the production GitHub import workflow.
+// Instead, seed.ts is useful for local development / rebuilding the database.
 import "dotenv/config";
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -331,7 +333,9 @@ async function main() {
   // under prisma/apis/, so adding a new one is just dropping in a file.
   console.log("📌 Seeding curated APIs with endpoint data...");
   const apisDir = path.join(__dirname, "apis");
-  const apiFiles = (await fs.readdir(apisDir)).filter((f) => f.endsWith(".json"));
+  const apiFiles = (await fs.readdir(apisDir)).filter((f) =>
+    f.endsWith(".json"),
+  );
 
   const hardcodedIds = new Set<string>();
   for (const file of apiFiles) {
@@ -386,7 +390,9 @@ async function main() {
       baseUrl,
       docsUrl: entry.endpoint,
       tags: [entry.category.toLowerCase()],
-      endpoints: [{ path, method: entry.method as any, summary: entry.description }],
+      endpoints: [
+        { path, method: entry.method as any, summary: entry.description },
+      ],
     });
 
     if (!result.ok) {
@@ -398,6 +404,29 @@ async function main() {
   }
 
   console.log(`  ✓ ${added} APIs imported, ${skipped} skipped`);
+
+  // Seed community submitted APIs approved via GitHub PR (see CONTRIBUTING.md).
+  // These are also rebuilt fresh each run, same as the curated list above.
+  console.log("\n🤝 Seeding community-approved APIs...");
+  const communityDir = path.join(__dirname, "community-apis");
+  const communityFiles = (await fs.readdir(communityDir)).filter((f) =>
+    f.endsWith(".json"),
+  );
+
+  let communityAdded = 0;
+  for (const file of communityFiles) {
+    const raw = JSON.parse(
+      await fs.readFile(path.join(communityDir, file), "utf8"),
+    );
+    const result = await addApi(raw);
+    if (!result.ok) {
+      console.error(`  ✗ ${file}: ${result.errors.join("; ")}`);
+      continue;
+    }
+    communityAdded++;
+    console.log(`  ✓ ${result.api.name}`);
+  }
+  console.log(`  ✓ ${communityAdded} community API(s) imported`);
 
   await seedFromApisGuru();
 }
