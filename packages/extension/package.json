@@ -3,7 +3,17 @@
   "displayName": "API Explorer",
   "description": "Search and test public APIs without leaving VS Code",
   "version": "0.0.1",
-  "publisher": "your-publisher-name",
+  "publisher": "mahdi-zangeneh",
+  "icon": "resources/marketplace-icon.png",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/matty900/api-explorer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/matty900/api-explorer/issues"
+  },
+  "homepage": "https://github.com/matty900/api-explorer#readme",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -45,15 +55,26 @@
         "command": "api-explorer.openRequestBuilder",
         "title": "API Explorer: Open Request Builder"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "API Explorer",
+      "properties": {
+        "apiExplorer.backendUrl": {
+          "type": "string",
+          "default": "https://api-explorer-backend-rust.vercel.app",
+          "description": "Base URL of the API Explorer backend. Override this to point at a local dev server (e.g. http://localhost:3000)."
+        }
+      }
+    }
   },
   "scripts": {
     "build": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --platform=node --format=cjs",
     "build:webview": "esbuild src/webview.tsx --bundle --outfile=dist/webview.js --platform=browser --define:process.env.NODE_ENV=\\\"production\\\"",
     "watch": "npm run build -- --watch",
     "watch:webview": "npm run build:webview -- --watch",
-    "package": "vsce package",
-    "publish": "vsce publish"
+    "vscode:prepublish": "npm run build && npm run build:webview",
+    "package": "vsce package --no-dependencies",
+    "publish": "vsce publish --no-dependencies"
   },
   "dependencies": {
     "react": "^18.0.0",
@@ -64,6 +85,7 @@
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
     "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3.2.1",
     "esbuild": "^0.20.0",
     "typescript": "^5.0.0"
   }

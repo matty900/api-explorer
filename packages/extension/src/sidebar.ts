@@ -3,9 +3,7 @@
 
 // sidebar.ts is the controller/bridge (extension host side, has real system/network access
 import * as vscode from "vscode";
-
-// sidebar.ts runs in the Node.js extension host
-const BACKEND_URL = "http://localhost:3000";
+import { getBackendUrl } from "./config";
 
 export class SidebarProvider implements vscode.WebviewViewProvider {
   constructor(private readonly _extensionUri: vscode.Uri) {}
@@ -19,10 +17,11 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     webviewView.webview.html = this._getHtml(webviewView.webview);
     // The message listener handles messages sent from the webview (e.g., to fetch categories, perform search, or open the request builder)
     webviewView.webview.onDidReceiveMessage(async (msg) => {
+      const backendUrl = getBackendUrl();
       // 1. Fetch categories
       if (msg.type === "getCategories") {
         try {
-          const res = await fetch(`${BACKEND_URL}/api/categories`);
+          const res = await fetch(`${backendUrl}/api/categories`);
           const data = await res.json();
           webviewView.webview.postMessage({
             type: "categoriesResult",
@@ -38,7 +37,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
       // 2. Perform search
       if (msg.type === "search") {
         try {
-          const url = new URL(`${BACKEND_URL}/api/search`);
+          const url = new URL(`${backendUrl}/api/search`);
           url.searchParams.set("q", msg.query ?? "");
           url.searchParams.set("category", msg.category ?? "");
           const res = await fetch(url.toString());
@@ -50,7 +49,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
         } catch {
           webviewView.webview.postMessage({
             type: "error",
-            message: "Cannot reach backend. Is it running on localhost:3000?",
+            message: `Cannot reach backend at ${backendUrl}.`,
           });
         }
       }
@@ -63,7 +62,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
       }
       // 4. Open the "Submit an API" web form in the user's default browser
       if (msg.type === "submitApi") {
-        vscode.env.openExternal(vscode.Uri.parse(`${BACKEND_URL}/submit`));
+        vscode.env.openExternal(vscode.Uri.parse(`${backendUrl}/submit`));
       }
     });
   }

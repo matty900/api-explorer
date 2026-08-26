@@ -8,3 +8,9 @@ vsc-extension-quickstart.md
 **/*.map
 **/eslint.config.mjs
 **/.vscode-test.*
+
+# Everything is bundled into dist/*.js via esbuild — node_modules isn't
+# needed at runtime (the only external is `vscode`, provided by the host).
+node_modules/**
+src/**
+tsconfig.json

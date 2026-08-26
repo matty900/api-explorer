@@ -1,65 +1,33 @@
-# api-explorer README
+# API Explorer
 
-This is the README for your extension "api-explorer". After writing up a brief description, we recommend including the following sections.
+Search and test public REST APIs without leaving VS Code.
+
+Browse a growing catalog of public APIs, filter by category or auth type, and fire real HTTP requests from a request builder panel — all inside the editor.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+- **Search** APIs by name, description, or tag from the sidebar
+- **Filter** by category (Weather, Finance, Gaming, …) and auth type (Free, API Key, OAuth, Bearer)
+- **Test requests** live with the built-in request builder — pick an endpoint, fill in params, send it
+- **Copy as fetch()** to paste working code straight into your project
+- **Submit an API** — click the **+** button in the sidebar to suggest an API for the catalog; every submission is reviewed before it goes live
 
-For example if there is an image subfolder under your extension project workspace:
+## Getting started
 
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
-
-## Requirements
-
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+1. Open the API Explorer icon in the Activity Bar.
+2. Search or browse by category.
+3. Click an API to open the request builder, fill in the request, and hit Send.
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+This extension contributes the following setting:
 
-For example:
+- `apiExplorer.backendUrl` — base URL of the API Explorer backend. Defaults to the hosted backend; override it (e.g. `http://localhost:3000`) if you're running your own backend locally.
 
-This extension contributes the following settings:
+## Contributing
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+Know an API that should be in the catalog? Use the **+** button in the sidebar, or see [CONTRIBUTING.md](https://github.com/matty900/api-explorer/blob/main/CONTRIBUTING.md) to add one via pull request.
 
-## Known Issues
+## Privacy
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+Search and category requests, and any API request you send through the request builder, are relayed through the API Explorer backend (see `apiExplorer.backendUrl`). No request data is stored beyond what's needed to serve the response.

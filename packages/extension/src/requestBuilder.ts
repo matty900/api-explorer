@@ -1,7 +1,6 @@
 // This file contains the implementation of the request builder panel for testing APIs in the VS Code extension.
 import * as vscode from "vscode";
-
-const BACKEND_URL = "http://localhost:3000";
+import { getBackendUrl } from "./config";
 
 // generate a random nonce for Content Security Policy
 function getNonce() {
@@ -44,7 +43,7 @@ export class RequestBuilderPanel {
     this._panel.webview.onDidReceiveMessage(async (msg) => {
       if (msg.type === "sendRequest") {
         try {
-          const res = await fetch(`${BACKEND_URL}/api/proxy`, {
+          const res = await fetch(`${getBackendUrl()}/api/proxy`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(msg.request),
