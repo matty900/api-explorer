@@ -10,7 +10,7 @@ export async function GET() {
       take: 15,
     });
 
-    const categories = groups.map((g) => g.category);
+    const categories = groups.map((g: { category: string }) => g.category);
     return NextResponse.json({ categories });
   } catch {
     return NextResponse.json(
