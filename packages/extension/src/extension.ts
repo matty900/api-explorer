@@ -19,7 +19,7 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       "api-explorer.openRequestBuilder",
       (api: unknown) => {
-        RequestBuilderPanel.createOrShow(api);
+        RequestBuilderPanel.createOrShow(context, api);
       },
     ),
   );

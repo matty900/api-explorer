@@ -13,12 +13,18 @@ function getNonce() {
   return text;
 }
 
+type StoredAuth =
+  | { authType: "apiKey" | "bearer" | "oauth2"; value: string }
+  | { authType: "basic"; username: string; password: string };
+
 // This class manages the request builder panel that opens when clicking on an API in the sidebar
 export class RequestBuilderPanel {
   public static currentPanel: RequestBuilderPanel | undefined;
   private readonly _panel: vscode.WebviewPanel;
+  private readonly _context: vscode.ExtensionContext;
+  private _api: any;
 
-  public static createOrShow(api: unknown) {
+  public static createOrShow(context: vscode.ExtensionContext, api: unknown) {
     const column = vscode.ViewColumn.Beside;
     if (RequestBuilderPanel.currentPanel) {
       RequestBuilderPanel.currentPanel._panel.reveal(column);
@@ -31,11 +37,20 @@ export class RequestBuilderPanel {
       column,
       { enableScripts: true, retainContextWhenHidden: true },
     );
-    RequestBuilderPanel.currentPanel = new RequestBuilderPanel(panel, api);
+    RequestBuilderPanel.currentPanel = new RequestBuilderPanel(
+      panel,
+      context,
+      api,
+    );
   }
   // The constructor sets up the webview panel and its message listener
-  private constructor(panel: vscode.WebviewPanel, api: unknown) {
+  private constructor(
+    panel: vscode.WebviewPanel,
+    context: vscode.ExtensionContext,
+    api: unknown,
+  ) {
     this._panel = panel;
+    this._context = context;
     this._update(api);
     this._panel.onDidDispose(() => {
       RequestBuilderPanel.currentPanel = undefined;
@@ -71,11 +86,46 @@ export class RequestBuilderPanel {
         vscode.env.clipboard.writeText(msg.code);
         vscode.window.showInformationMessage("Code snippet copied!");
       }
+      // The webview signals "ready" once its script has attached its message
+      // listener, so we don't lose an authSecret message posted too early.
+      if (msg.type === "ready") {
+        await this._sendSavedAuth();
+      }
+      if (msg.type === "saveAuth" && msg.apiId && msg.auth) {
+        await this._context.secrets.store(
+          this._authKey(msg.apiId),
+          JSON.stringify(msg.auth as StoredAuth),
+        );
+      }
+      if (msg.type === "deleteAuth" && msg.apiId) {
+        await this._context.secrets.delete(this._authKey(msg.apiId));
+      }
     });
   }
+
+  private _authKey(apiId: string): string {
+    return `apiExplorer.auth.${apiId}`;
+  }
+
+  // Looks up any locally saved credentials for the currently open API and,
+  // if found, pushes them into the webview so the auth fields pre-fill.
+  private async _sendSavedAuth() {
+    const a = this._api;
+    if (!a?.id || !a.authType || a.authType === "none") return;
+    const raw = await this._context.secrets.get(this._authKey(a.id));
+    if (!raw) return;
+    try {
+      this._panel.webview.postMessage({
+        type: "authSecret",
+        auth: JSON.parse(raw) as StoredAuth,
+      });
+    } catch {}
+  }
+
   // The _update method updates the webview content based on the selected API
   private _update(api: unknown) {
     const a = api as {
+      id: string;
       name: string;
       description: string;
       baseUrl: string;
@@ -83,11 +133,12 @@ export class RequestBuilderPanel {
       authType: string;
       endpoints: Array<{ path: string; method: string; summary: string }>;
     };
+    this._api = a;
     this._panel.title = "Test: " + a.name;
     this._panel.webview.html = this._getHtml(a);
   }
 
-  /* This method constructs a massive string containing the HTML, CSS, 
+  /* This method constructs a massive string containing the HTML, CSS,
   and JavaScript that renders the entire testing dashboard. */
   private _getHtml(api: any): string {
     const nonce = getNonce();
@@ -96,6 +147,8 @@ export class RequestBuilderPanel {
         .replace(/'/g, "&#39;")
         .replace(/"/g, "&quot;")
         .replace(/`/g, "&#96;");
+    const jsStr = (s: string) =>
+      JSON.stringify(String(s)).replace(/</g, "\\u003c");
     // generates small clickable badge buttons for quick testing
     const firstEndpoint = api.endpoints?.[0];
     const defaultUrl = firstEndpoint
@@ -116,6 +169,57 @@ export class RequestBuilderPanel {
           "</button>",
       )
       .join("");
+
+    const docsUrl = safe(api.docsUrl || "#");
+    let authHtml = "";
+    if (api.authType === "apiKey") {
+      authHtml =
+        '<label>Authentication</label><div class="auth-box">' +
+        '<div class="auth-subtitle">API Key</div>' +
+        '<div class="row"><input id="auth-key" type="password" placeholder="Enter your API key" />' +
+        '<button id="auth-key-toggle" class="ghost-btn" type="button">&#128065; Show</button></div>' +
+        '<p class="auth-hint">Sent as the <code>X-API-Key</code> header. ' +
+        '<a href="' +
+        docsUrl +
+        '" target="_blank">Get your API key &rarr; API documentation</a></p>' +
+        '<label class="checkbox-row"><input type="checkbox" id="auth-save" /> Save key locally</label>' +
+        "</div>";
+    } else if (api.authType === "bearer" || api.authType === "oauth2") {
+      const isOauth = api.authType === "oauth2";
+      authHtml =
+        '<label>Authentication</label><div class="auth-box">' +
+        '<div class="auth-subtitle">' +
+        (isOauth ? "OAuth 2.0" : "Bearer Token") +
+        "</div>" +
+        (isOauth
+          ? '<p class="auth-hint">API Explorer can\'t complete an OAuth login on your behalf &mdash; that requires an app registered with this provider. Get an access token from their docs or dashboard, then paste it below.</p>'
+          : "") +
+        '<div class="row"><input id="auth-token" type="password" placeholder="' +
+        (isOauth ? "Paste your access token" : "Enter your bearer token") +
+        '" />' +
+        '<button id="auth-token-toggle" class="ghost-btn" type="button">&#128065; Show</button></div>' +
+        '<p class="auth-hint">Sent as the <code>Authorization: Bearer</code> header. ' +
+        '<a href="' +
+        docsUrl +
+        '" target="_blank">' +
+        (isOauth ? "Get an access token" : "Get your token") +
+        " &rarr; API documentation</a></p>" +
+        '<label class="checkbox-row"><input type="checkbox" id="auth-save" /> Save token locally</label>' +
+        "</div>";
+    } else if (api.authType === "basic") {
+      authHtml =
+        '<label>Authentication</label><div class="auth-box">' +
+        '<div class="auth-subtitle">Basic Authentication</div>' +
+        '<label>Username</label><input id="auth-username" type="text" placeholder="username" />' +
+        '<label>Password</label><div class="row"><input id="auth-password" type="password" placeholder="password" />' +
+        '<button id="auth-password-toggle" class="ghost-btn" type="button">&#128065; Show</button></div>' +
+        '<p class="auth-hint"><a href="' +
+        docsUrl +
+        '" target="_blank">API documentation</a></p>' +
+        '<label class="checkbox-row"><input type="checkbox" id="auth-save" /> Save credentials locally</label>' +
+        "</div>";
+    }
+
     // returns the full HTML content for the webview panel for testing the API, including styles and scripts for sending requests and displaying responses
     return (
       "<!DOCTYPE html>" +
@@ -137,6 +241,16 @@ export class RequestBuilderPanel {
       ".row input{flex:1;}" +
       "button{background:var(--vscode-button-background);color:var(--vscode-button-foreground);border:none;border-radius:4px;padding:7px 16px;font-size:13px;cursor:pointer;font-family:inherit;}" +
       ".ep-btn{font-size:11px;padding:3px 8px;background:var(--vscode-badge-background);color:var(--vscode-badge-foreground);border-radius:4px;margin-right:6px;margin-bottom:6px;}" +
+      ".ghost-btn{background:transparent;border:1px solid var(--vscode-input-border);color:var(--vscode-foreground);flex:none;white-space:nowrap;}" +
+      ".auth-box{background:var(--vscode-textCodeBlock-background);border:1px solid var(--vscode-widget-border);border-radius:6px;padding:12px;margin-top:6px;}" +
+      ".auth-box label{margin-top:10px;}" +
+      ".auth-box label:first-child{margin-top:0;}" +
+      ".auth-subtitle{font-size:13px;font-weight:500;color:var(--vscode-foreground);}" +
+      ".auth-hint{font-size:11px;color:var(--vscode-descriptionForeground);margin:8px 0 0;line-height:1.5;}" +
+      ".auth-hint a{color:var(--vscode-textLink-foreground);}" +
+      ".auth-hint code{font-family:var(--vscode-editor-font-family,monospace);}" +
+      ".checkbox-row{display:flex;align-items:center;gap:6px;font-size:12px;text-transform:none;letter-spacing:normal;font-weight:400;color:var(--vscode-foreground);margin-top:10px;}" +
+      ".checkbox-row input{width:auto;}" +
       "pre{background:var(--vscode-textCodeBlock-background);border:1px solid var(--vscode-widget-border);border-radius:4px;padding:12px;font-size:12px;overflow:auto;max-height:400px;white-space:pre-wrap;word-break:break-word;}" +
       "#loading{display:none;color:var(--vscode-descriptionForeground);font-size:12px;margin-top:8px;}" +
       "#status{font-size:12px;color:var(--vscode-descriptionForeground);margin-top:8px;}" +
@@ -170,7 +284,8 @@ export class RequestBuilderPanel {
       "</div>" +
       "<label>Body (JSON)</label>" +
       '<textarea id="body" placeholder=\'{ "key": "value" }\'></textarea>' +
-      '<div style="margin-top:12px;display:flex;gap:8px;">' +
+      authHtml +
+      '<div style="margin-top:16px;display:flex;gap:8px;">' +
       '<button id="send-btn2">Send Request</button>' +
       '<button id="copy-btn" style="background:var(--vscode-button-secondaryBackground);color:var(--vscode-button-secondaryForeground);">Copy as fetch()</button>' +
       "</div>" +
@@ -183,11 +298,71 @@ export class RequestBuilderPanel {
       "(function(){" +
       "var vscode=acquireVsCodeApi();" +
       "var lastRequest=null;" +
+      "var authType=" +
+      jsStr(api.authType || "none") +
+      ";" +
+      "var apiId=" +
+      jsStr(api.id || "") +
+      ";" +
+      "function setupEyeToggle(inputId,btnId){" +
+      "var btn=document.getElementById(btnId);" +
+      "if(!btn)return;" +
+      "btn.addEventListener('click',function(){" +
+      "var input=document.getElementById(inputId);" +
+      "if(input.type==='password'){input.type='text';btn.innerHTML='&#128064; Hide';}" +
+      "else{input.type='password';btn.innerHTML='&#128065; Show';}" +
+      "});" +
+      "}" +
+      "setupEyeToggle('auth-key','auth-key-toggle');" +
+      "setupEyeToggle('auth-token','auth-token-toggle');" +
+      "setupEyeToggle('auth-password','auth-password-toggle');" +
+      "function collectAuthPayload(){" +
+      "if(authType==='apiKey'){var el=document.getElementById('auth-key');return el?{authType:authType,value:el.value}:null;}" +
+      "if(authType==='bearer'||authType==='oauth2'){var el=document.getElementById('auth-token');return el?{authType:authType,value:el.value}:null;}" +
+      "if(authType==='basic'){var u=document.getElementById('auth-username');var p=document.getElementById('auth-password');return (u&&p)?{authType:authType,username:u.value,password:p.value}:null;}" +
+      "return null;" +
+      "}" +
+      "var saveDebounce;" +
+      "function maybeSaveAuth(){" +
+      "var cb=document.getElementById('auth-save');" +
+      "if(!cb||!cb.checked)return;" +
+      "clearTimeout(saveDebounce);" +
+      "saveDebounce=setTimeout(function(){" +
+      "vscode.postMessage({type:'saveAuth',apiId:apiId,auth:collectAuthPayload()});" +
+      "},400);" +
+      "}" +
+      "var saveCb=document.getElementById('auth-save');" +
+      "if(saveCb){" +
+      "saveCb.addEventListener('change',function(){" +
+      "if(saveCb.checked){vscode.postMessage({type:'saveAuth',apiId:apiId,auth:collectAuthPayload()});}" +
+      "else{vscode.postMessage({type:'deleteAuth',apiId:apiId});}" +
+      "});" +
+      "['auth-key','auth-token','auth-username','auth-password'].forEach(function(id){" +
+      "var el=document.getElementById(id);" +
+      "if(el)el.addEventListener('input',maybeSaveAuth);" +
+      "});" +
+      "}" +
+      "function addAuthHeaders(headers){" +
+      "if(authType==='apiKey'){" +
+      "var el=document.getElementById('auth-key');" +
+      "if(el&&el.value)headers['X-API-Key']=el.value;" +
+      "}else if(authType==='bearer'||authType==='oauth2'){" +
+      "var el=document.getElementById('auth-token');" +
+      "if(el&&el.value)headers['Authorization']='Bearer '+el.value;" +
+      "}else if(authType==='basic'){" +
+      "var u=document.getElementById('auth-username');" +
+      "var p=document.getElementById('auth-password');" +
+      "var uv=u?u.value:'';var pv=p?p.value:'';" +
+      "if(uv||pv)headers['Authorization']='Basic '+btoa(uv+':'+pv);" +
+      "}" +
+      "}" +
       "function doSend(){" +
       'var method=document.getElementById("method").value;' +
       'var url=document.getElementById("url").value;' +
       'var body=document.getElementById("body").value.trim();' +
-      "lastRequest={method:method,url:url,headers:{},body:body||undefined};" +
+      "var headers={};" +
+      "addAuthHeaders(headers);" +
+      "lastRequest={method:method,url:url,headers:headers,body:body||undefined};" +
       'document.getElementById("loading").style.display="block";' +
       'document.getElementById("response-body").textContent="";' +
       'document.getElementById("status").textContent="";' +
@@ -197,7 +372,8 @@ export class RequestBuilderPanel {
       'document.getElementById("send-btn2").addEventListener("click",doSend);' +
       'document.getElementById("copy-btn").addEventListener("click",function(){' +
       "if(!lastRequest)return;" +
-      'var code="const res = await fetch(\'"+lastRequest.url+"\', {\\n  method: \'"+lastRequest.method+"\'\\n});\\nconst data = await res.json();\\nconsole.log(data);";' +
+      "var headersStr=JSON.stringify(lastRequest.headers||{},null,2);" +
+      'var code="const res = await fetch(\'"+lastRequest.url+"\', {\\n  method: \'"+lastRequest.method+"\',\\n  headers: "+headersStr+(lastRequest.body?",\\n  body: "+JSON.stringify(lastRequest.body):"")+"\\n});\\nconst data = await res.json();\\nconsole.log(data);";' +
       'vscode.postMessage({type:"copyCode",code:code});' +
       "});" +
       'document.querySelectorAll(".ep-btn").forEach(function(btn){' +
@@ -215,7 +391,23 @@ export class RequestBuilderPanel {
       'document.getElementById("status").textContent=msg.response.status+" "+msg.response.statusText+" · "+msg.response.durationMs+"ms";' +
       "}" +
       'if(msg.type==="error"){document.getElementById("response-body").textContent=msg.message;}' +
+      "if(msg.type==='authSecret'&&msg.auth){" +
+      "var auth=msg.auth;" +
+      "var cb=document.getElementById('auth-save');" +
+      "if(auth.authType==='apiKey'){" +
+      "var el=document.getElementById('auth-key');" +
+      "if(el){el.value=auth.value||'';if(cb)cb.checked=true;}" +
+      "}else if(auth.authType==='bearer'||auth.authType==='oauth2'){" +
+      "var el=document.getElementById('auth-token');" +
+      "if(el){el.value=auth.value||'';if(cb)cb.checked=true;}" +
+      "}else if(auth.authType==='basic'){" +
+      "var u=document.getElementById('auth-username');" +
+      "var p=document.getElementById('auth-password');" +
+      "if(u&&p){u.value=auth.username||'';p.value=auth.password||'';if(cb)cb.checked=true;}" +
+      "}" +
+      "}" +
       "});" +
+      "vscode.postMessage({type:'ready'});" +
       "}())" +
       "<\/script>" +
       "</body></html>"
