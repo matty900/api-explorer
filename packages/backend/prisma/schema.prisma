@@ -16,6 +16,11 @@ model Api {
   docsUrl     String
   tags        String[] @default([])
   endpoints   Json     @default("[]")
+  // Semantic-search vector (all-MiniLM-L6-v2, 384-dim). Prisma has no native
+  // vector type, so it's Unsupported: written and queried via raw SQL only
+  // (see packages/shared/src/embed.ts and app/api/search/route.ts). The HNSW
+  // index and the `vector` extension are created by scripts/setup-pgvector.ts.
+  embedding   Unsupported("vector(384)")?
   createdAt   DateTime @default(now())
 
   @@index([category])

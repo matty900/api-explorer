@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "prisma generate --schema=prisma/schema.prisma && next build",
     "start": "next start",
-    "seed": "tsx prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts",
+    "setup:pgvector": "tsx scripts/setup-pgvector.ts",
+    "backfill:embeddings": "tsx scripts/backfill-embeddings.ts",
+    "search:doctor": "tsx scripts/search-doctor.ts"
   },
   "prisma": {
     "schema": "prisma/schema.prisma",

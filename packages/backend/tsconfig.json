@@ -20,7 +20,8 @@
     ],
     "paths": {
       "@/*": ["./*"],
-      "@repo/shared": ["../shared/src"]
+      "@repo/shared": ["../shared/src"],
+      "@repo/shared/embed": ["../shared/src/embed"]
     }
   },
   "include": [
