@@ -72,7 +72,9 @@ async function embedViaApi(text: string): Promise<number[]> {
       "Content-Type": "application/json",
       ...(API_KEY ? { Authorization: `Bearer ${API_KEY}` } : {}),
     },
-    body: JSON.stringify({ inputs: text }),
+    // `inputs` is what Hugging Face expects; `text` is what Cloudflare
+    // Workers AI expects. Endpoints ignore the key they don't use.
+    body: JSON.stringify({ inputs: text, text }),
     signal: AbortSignal.timeout(15000),
   });
   if (!res.ok) {
