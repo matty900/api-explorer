@@ -6,7 +6,7 @@ Browse a growing catalog of public APIs, filter by category or auth type, and fi
 
 ## Features
 
-- **Search** APIs by name, description, or tag from the sidebar
+- **Search** APIs by name, description, tag, or switch to **Smart** search and describe what you need in plain language ("something for finding songs from TV shows")
 - **Filter** by category (Weather, Finance, Gaming, …) and auth type (Free, API Key, OAuth, Bearer)
 - **Test requests** live with the built-in request builder — pick an endpoint, fill in params, send it
 - **Copy as fetch()** to paste working code straight into your project
@@ -20,9 +20,10 @@ Browse a growing catalog of public APIs, filter by category or auth type, and fi
 
 ## Extension Settings
 
-This extension contributes the following setting:
+This extension contributes the following settings:
 
-- `apiExplorer.backendUrl` — base URL of the API Explorer backend. Defaults to the hosted backend; override it (e.g. `http://localhost:3000`) if you're running your own backend locally.
+- `apiExplorer.backendUrl` — base URL of the API Explorer backend. Defaults to the hosted backend, or `http://localhost:3000` automatically when the extension is run from source (F5). Override it to point at your own backend.
+- `apiExplorer.vercelBypassToken` — optional; a Vercel Protection Bypass secret, used only when `apiExplorer.backendUrl` points at a password-protected Vercel preview deployment.
 
 ## Contributing
 

@@ -10,6 +10,7 @@
     "onlyBuiltDependencies": [
       "@prisma/engines",
       "esbuild",
+      "onnxruntime-node",
       "prisma",
       "sharp"
     ]

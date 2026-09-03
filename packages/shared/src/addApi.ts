@@ -242,5 +242,21 @@ export async function addApi(input: unknown): Promise<AddApiResult> {
     create: { id, ...data },
   });
 
+  // compute and store the semantic search vector. A failure here
+  // like the model download is blocked must not stop the API being catalogued
+  // Imported lazily so callers that only need validateApiSubmission (the
+  // untrusted fork CI check) never pull in the embedding model.
+  try {
+    const { apiEmbeddingText, embed, toVectorLiteral } =
+      await import("./embed");
+    const vec = await embed(apiEmbeddingText(entry));
+    await prisma.$executeRaw`
+      UPDATE "Api" SET embedding = ${toVectorLiteral(vec)}::vector WHERE id = ${id}`;
+  } catch (err) {
+    console.warn(
+      `  ⚠️  embedding skipped for ${id}: ${(err as Error).message}`,
+    );
+  }
+
   return { ok: true, api: api as unknown as ApiEntry, created: !existing };
 }

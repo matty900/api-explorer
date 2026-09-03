@@ -3,10 +3,13 @@
 
 // sidebar.ts is the controller/bridge (extension host side, has real system/network access
 import * as vscode from "vscode";
-import { getBackendUrl } from "./config";
+import { getBackendHeaders, getBackendUrl } from "./config";
 
 export class SidebarProvider implements vscode.WebviewViewProvider {
-  constructor(private readonly _extensionUri: vscode.Uri) {}
+  constructor(
+    private readonly _extensionUri: vscode.Uri,
+    private readonly _extensionMode: vscode.ExtensionMode,
+  ) {}
 
   public resolveWebviewView(webviewView: vscode.WebviewView) {
     webviewView.webview.options = {
@@ -17,11 +20,12 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     webviewView.webview.html = this._getHtml(webviewView.webview);
     // The message listener handles messages sent from the webview (e.g., to fetch categories, perform search, or open the request builder)
     webviewView.webview.onDidReceiveMessage(async (msg) => {
-      const backendUrl = getBackendUrl();
+      const backendUrl = getBackendUrl(this._extensionMode);
+      const headers = getBackendHeaders();
       // 1. Fetch categories
       if (msg.type === "getCategories") {
         try {
-          const res = await fetch(`${backendUrl}/api/categories`);
+          const res = await fetch(`${backendUrl}/api/categories`, { headers });
           const data = await res.json();
           webviewView.webview.postMessage({
             type: "categoriesResult",
@@ -40,7 +44,8 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
           const url = new URL(`${backendUrl}/api/search`);
           url.searchParams.set("q", msg.query ?? "");
           url.searchParams.set("category", msg.category ?? "");
-          const res = await fetch(url.toString());
+          url.searchParams.set("mode", msg.mode ?? "auto");
+          const res = await fetch(url.toString(), { headers });
           const data = await res.json();
           webviewView.webview.postMessage({
             type: "searchResults",

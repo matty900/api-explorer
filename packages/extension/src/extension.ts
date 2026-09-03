@@ -5,7 +5,10 @@ import { RequestBuilderPanel } from "./requestBuilder";
 
 export function activate(context: vscode.ExtensionContext) {
   // pass the extension URI to the sidebar provider so it can load local resources
-  const sidebarProvider = new SidebarProvider(context.extensionUri);
+  const sidebarProvider = new SidebarProvider(
+    context.extensionUri,
+    context.extensionMode,
+  );
 
   // Connects the custom code (sidebarProvider) to the specific UI location ("api-explorer.sidebar")
   context.subscriptions.push(

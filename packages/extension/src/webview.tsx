@@ -57,11 +57,27 @@ function FilterIcon({ active }: { active: boolean }) {
   );
 }
 
+type SearchMode = "auto" | "keyword" | "semantic";
+
+const MODE_LABEL: Record<SearchMode, string> = {
+  auto: "Auto",
+  keyword: "Keyword",
+  semantic: "Smart",
+};
+
+const MODE_TITLE: Record<SearchMode, string> = {
+  auto: "Keyword for short queries, meaning-based for phrases",
+  keyword: "Match names, descriptions and tags literally",
+  semantic: "Describe what you want — ranked by meaning",
+};
+
 function App() {
   const [query, setQuery] = useState("");
+  const [mode, setMode] = useState<SearchMode>("auto");
   const [category, setCategory] = useState("All");
   const [categories, setCategories] = useState<string[]>(["All"]);
   const [results, setResults] = useState<Api[]>([]);
+  const [degraded, setDegraded] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [searched, setSearched] = useState(false);
@@ -80,6 +96,7 @@ function App() {
       }
       if (msg.type === "searchResults") {
         setResults(msg.results.apis || []);
+        setDegraded(Boolean(msg.results.degraded));
         setLoading(false);
         setSearched(true);
         setError("");
@@ -91,7 +108,12 @@ function App() {
     };
     window.addEventListener("message", handler);
     vscode.postMessage({ type: "getCategories" });
-    vscode.postMessage({ type: "search", query: "", category: "All" });
+    vscode.postMessage({
+      type: "search",
+      query: "",
+      category: "All",
+      mode: "auto",
+    });
     setLoading(true);
     return () => window.removeEventListener("message", handler);
   }, []);
@@ -106,11 +128,11 @@ function App() {
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, [filterOpen]);
 
-  // The search function sends a message to the extension to perform a search with the current query and category
-  const search = (q: string, cat: string) => {
+  // The search function sends a message to the extension to perform a search with the current query, category and search mode
+  const search = (q: string, cat: string, m: SearchMode = mode) => {
     setLoading(true);
     setError("");
-    vscode.postMessage({ type: "search", query: q, category: cat });
+    vscode.postMessage({ type: "search", query: q, category: cat, mode: m });
   };
 
   // The handleInput function is called when the search input changes, and it debounces the search calls to avoid sending too many messages while the user is typing
@@ -119,6 +141,13 @@ function App() {
     setQuery(val);
     clearTimeout(debounce.current);
     debounce.current = setTimeout(() => search(val, category), 400);
+  };
+
+  // The handleMode function switches the search engine and immediately re runs the current query
+  const handleMode = (m: SearchMode) => {
+    setMode(m);
+    clearTimeout(debounce.current);
+    search(query, category, m);
   };
 
   // The handleCategory function is called when a category pill is clicked, and it updates the category state and triggers a new search with the selected category
@@ -162,7 +191,7 @@ function App() {
           type="text"
           value={query}
           onChange={handleInput}
-          placeholder="Search APIs... e.g. weather, games"
+          placeholder="Search APIs... e.g. weather, or describe what you need"
           style={{
             flex: 1,
             padding: "7px 10px",
@@ -341,6 +370,56 @@ function App() {
         </button>
       </div>
 
+      {/* Search mode toggle */}
+      <div
+        style={{
+          display: "flex",
+          gap: 4,
+          marginBottom: 10,
+          alignItems: "center",
+        }}
+      >
+        <span
+          style={{
+            fontSize: 10,
+            fontWeight: 600,
+            letterSpacing: ".06em",
+            textTransform: "uppercase",
+            color: "var(--vscode-descriptionForeground)",
+            marginRight: 2,
+          }}
+        >
+          Search
+        </span>
+        {(["auto", "keyword", "semantic"] as SearchMode[]).map((m) => (
+          <button
+            key={m}
+            onClick={() => handleMode(m)}
+            title={MODE_TITLE[m]}
+            style={{
+              fontSize: 11,
+              padding: "3px 8px",
+              borderRadius: 99,
+              cursor: "pointer",
+              border: "1px solid",
+              borderColor:
+                mode === m
+                  ? "var(--vscode-focusBorder)"
+                  : "var(--vscode-widget-border)",
+              background:
+                mode === m ? "var(--vscode-button-background)" : "transparent",
+              color:
+                mode === m
+                  ? "var(--vscode-button-foreground)"
+                  : "var(--vscode-foreground)",
+              fontFamily: "inherit",
+            }}
+          >
+            {MODE_LABEL[m]}
+          </button>
+        ))}
+      </div>
+
       {/* Category pills */}
       <div
         style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 12 }}
@@ -376,6 +455,13 @@ function App() {
       </div>
 
       {/* States */}
+      {!loading && degraded && mode !== "keyword" && (
+        <p
+          style={{ color: "var(--vscode-descriptionForeground)", fontSize: 11 }}
+        >
+          Smart search is unavailable on this backend — showing keyword results.
+        </p>
+      )}
       {loading && (
         <p
           style={{ color: "var(--vscode-descriptionForeground)", fontSize: 12 }}

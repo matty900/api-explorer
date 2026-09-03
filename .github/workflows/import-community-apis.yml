@@ -2,7 +2,9 @@ name: Import community APIs
 
 # Runs only after a community-apis/** PR has been reviewed and merged to
 # main — never on pull_request. Needs the DATABASE_URL repo secret set under
-# Settings → Secrets and variables → Actions.
+# Settings → Secrets and variables → Actions. Set EMBEDDING_API_URL /
+# EMBEDDING_API_KEY too if production embeds via a hosted endpoint, so
+# imported APIs get vectors from the same model as everything else.
 on:
   push:
     branches: [main]
@@ -33,3 +35,14 @@ jobs:
         run: pnpm --filter backend exec tsx scripts/import-community-apis.ts
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          EMBEDDING_API_URL: ${{ secrets.EMBEDDING_API_URL }}
+          EMBEDDING_API_KEY: ${{ secrets.EMBEDDING_API_KEY }}
+
+      # Safety net: fill in semantic-search vectors for any rows whose inline
+      # embedding failed during import (e.g. a transient endpoint error).
+      - name: Backfill missing search embeddings
+        run: pnpm --filter backend exec tsx scripts/backfill-embeddings.ts
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          EMBEDDING_API_URL: ${{ secrets.EMBEDDING_API_URL }}
+          EMBEDDING_API_KEY: ${{ secrets.EMBEDDING_API_KEY }}
