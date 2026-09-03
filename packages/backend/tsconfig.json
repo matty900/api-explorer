@@ -21,7 +21,8 @@
     "paths": {
       "@/*": ["./*"],
       "@repo/shared": ["../shared/src"],
-      "@repo/shared/embed": ["../shared/src/embed"]
+      "@repo/shared/embed": ["../shared/src/embed"],
+      "@repo/shared/embed-local": ["../shared/src/embed-local"]
     }
   },
   "include": [

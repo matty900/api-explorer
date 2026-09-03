@@ -6,7 +6,10 @@ import * as vscode from "vscode";
 import { getBackendUrl } from "./config";
 
 export class SidebarProvider implements vscode.WebviewViewProvider {
-  constructor(private readonly _extensionUri: vscode.Uri) {}
+  constructor(
+    private readonly _extensionUri: vscode.Uri,
+    private readonly _extensionMode: vscode.ExtensionMode,
+  ) {}
 
   public resolveWebviewView(webviewView: vscode.WebviewView) {
     webviewView.webview.options = {
@@ -17,7 +20,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     webviewView.webview.html = this._getHtml(webviewView.webview);
     // The message listener handles messages sent from the webview (e.g., to fetch categories, perform search, or open the request builder)
     webviewView.webview.onDidReceiveMessage(async (msg) => {
-      const backendUrl = getBackendUrl();
+      const backendUrl = getBackendUrl(this._extensionMode);
       // 1. Fetch categories
       if (msg.type === "getCategories") {
         try {
@@ -40,6 +43,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
           const url = new URL(`${backendUrl}/api/search`);
           url.searchParams.set("q", msg.query ?? "");
           url.searchParams.set("category", msg.category ?? "");
+          url.searchParams.set("mode", msg.mode ?? "auto");
           const res = await fetch(url.toString());
           const data = await res.json();
           webviewView.webview.postMessage({

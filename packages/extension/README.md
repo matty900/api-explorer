@@ -6,7 +6,7 @@ Browse a growing catalog of public APIs, filter by category or auth type, and fi
 
 ## Features
 
-- **Search** APIs by name, description, or tag from the sidebar
+- **Search** APIs by name, description, tag, or switch to **Smart** search and describe what you need in plain language ("something for finding songs from TV shows")
 - **Filter** by category (Weather, Finance, Gaming, …) and auth type (Free, API Key, OAuth, Bearer)
 - **Test requests** live with the built-in request builder — pick an endpoint, fill in params, send it
 - **Copy as fetch()** to paste working code straight into your project

@@ -9,7 +9,8 @@
     "seed": "tsx prisma/seed.ts",
     "setup:pgvector": "tsx scripts/setup-pgvector.ts",
     "backfill:embeddings": "tsx scripts/backfill-embeddings.ts",
-    "search:doctor": "tsx scripts/search-doctor.ts"
+    "search:doctor": "tsx scripts/search-doctor.ts",
+    "embed:verify": "tsx scripts/verify-embedding-parity.ts"
   },
   "prisma": {
     "schema": "prisma/schema.prisma",

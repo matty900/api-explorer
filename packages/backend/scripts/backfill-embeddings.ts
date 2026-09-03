@@ -6,7 +6,12 @@ HNSW index | index structure | makes ORDER BY embedding <=> ... LIMIT 10 fast in
 
 import "dotenv/config";
 import { prisma } from "@repo/shared";
-import { apiEmbeddingText, embed, toVectorLiteral } from "@repo/shared/embed";
+import {
+  apiEmbeddingText,
+  embed,
+  embeddingBackend,
+  toVectorLiteral,
+} from "@repo/shared/embed";
 
 type Row = {
   id: string;
@@ -40,7 +45,8 @@ async function main() {
   );
 
   console.log(
-    `${rows.length} API(s) to embed${all ? " (--all)" : " (missing only)"}.`,
+    `${rows.length} API(s) to embed${all ? " (--all)" : " (missing only)"} ` +
+      `via the ${embeddingBackend()} backend.`,
   );
 
   let done = 0;

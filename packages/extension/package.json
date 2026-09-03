@@ -61,8 +61,8 @@
       "properties": {
         "apiExplorer.backendUrl": {
           "type": "string",
-          "default": "https://api-explorer-backend-rust.vercel.app",
-          "description": "Base URL of the API Explorer backend. Override this to point at a local dev server (e.g. http://localhost:3000)."
+          "default": "",
+          "markdownDescription": "Base URL of the API Explorer backend. Leave blank to use the hosted backend — or `http://localhost:3000` automatically when running the extension from source (F5). Set a value to override, e.g. a self-hosted backend."
         }
       }
     }

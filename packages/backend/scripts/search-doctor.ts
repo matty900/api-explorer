@@ -2,7 +2,11 @@
 
 import "dotenv/config";
 import { prisma } from "@repo/shared";
-import { apiEmbeddingText, embed, toVectorLiteral } from "@repo/shared/embed";
+import {
+  embed,
+  embeddingBackend,
+  toVectorLiteral,
+} from "@repo/shared/embed";
 
 const query =
   process.argv.slice(2).join(" ") || "finding songs related to tv shows";
@@ -13,8 +17,8 @@ async function main() {
     process.exit(1);
   }
 
-  // 1 — the local model
-  console.log("1. Embedding model");
+  // 1 — the embedder (local model, or hosted API if EMBEDDING_API_URL is set)
+  console.log(`1. Embedding (${embeddingBackend()} backend)`);
   const t0 = Date.now();
   const vec = await embed(query);
   console.log(
