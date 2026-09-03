@@ -63,6 +63,11 @@
           "type": "string",
           "default": "",
           "markdownDescription": "Base URL of the API Explorer backend. Leave blank to use the hosted backend — or `http://localhost:3000` automatically when running the extension from source (F5). Set a value to override, e.g. a self-hosted backend."
+        },
+        "apiExplorer.vercelBypassToken": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Optional. A [Vercel Protection Bypass for Automation](https://vercel.com/docs/deployment-protection/methods-to-bypass-deployment-protection/protection-bypass-automation) secret, sent as the `x-vercel-protection-bypass` header so the extension can reach a password-protected Vercel preview deployment. Only needed when `#apiExplorer.backendUrl#` points at a protected preview."
         }
       }
     }

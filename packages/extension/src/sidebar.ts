@@ -3,7 +3,7 @@
 
 // sidebar.ts is the controller/bridge (extension host side, has real system/network access
 import * as vscode from "vscode";
-import { getBackendUrl } from "./config";
+import { getBackendHeaders, getBackendUrl } from "./config";
 
 export class SidebarProvider implements vscode.WebviewViewProvider {
   constructor(
@@ -21,10 +21,11 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     // The message listener handles messages sent from the webview (e.g., to fetch categories, perform search, or open the request builder)
     webviewView.webview.onDidReceiveMessage(async (msg) => {
       const backendUrl = getBackendUrl(this._extensionMode);
+      const headers = getBackendHeaders();
       // 1. Fetch categories
       if (msg.type === "getCategories") {
         try {
-          const res = await fetch(`${backendUrl}/api/categories`);
+          const res = await fetch(`${backendUrl}/api/categories`, { headers });
           const data = await res.json();
           webviewView.webview.postMessage({
             type: "categoriesResult",
@@ -44,7 +45,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
           url.searchParams.set("q", msg.query ?? "");
           url.searchParams.set("category", msg.category ?? "");
           url.searchParams.set("mode", msg.mode ?? "auto");
-          const res = await fetch(url.toString());
+          const res = await fetch(url.toString(), { headers });
           const data = await res.json();
           webviewView.webview.postMessage({
             type: "searchResults",

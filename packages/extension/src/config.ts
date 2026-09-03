@@ -31,3 +31,19 @@ export function getBackendUrl(extensionMode?: vscode.ExtensionMode): string {
 
   return PROD_BACKEND_URL;
 }
+
+// Headers to send with every backend request. Adds the Vercel protection-bypass
+// header when `apiExplorer.vercelBypassToken` is set, so the extension can talk
+// to a password-protected Vercel preview deployment while testing.
+export function getBackendHeaders(): Record<string, string> {
+  const token = vscode.workspace
+    .getConfiguration("apiExplorer")
+    .get<string>("vercelBypassToken", "")
+    .trim();
+
+  if (!token) return {};
+  return {
+    "x-vercel-protection-bypass": token,
+    "x-vercel-set-bypass-cookie": "true",
+  };
+}
